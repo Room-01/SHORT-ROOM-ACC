@@ -46,14 +46,6 @@
       max-width: 1000px;
     }
 
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 5px;
-      width: 100%;
-    }
-
     .brand {
       font-size: 1rem;
       font-weight: 800;
@@ -193,6 +185,8 @@
     @media (min-width: 768px) {
       .dashboard-grid {
         grid-template-columns: 1fr 1fr;
+        /* Menggunakan alignItems start agar card kanan tidak ikut merenggang ke bawah mengikuti tinggi card kiri */
+        align-items: start; 
       }
     }
 
@@ -207,6 +201,18 @@
       justify-content: space-between;
       align-items: center;
       padding: 0 5px;
+    }
+
+    /* Mengatur tinggi baris atas pada kolom kanan (kosong) agar sejajar dengan tinggi baris header (logo & logout) di sebelah kiri */
+    .right-column-spacer {
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      .right-column-spacer {
+        display: block;
+        height: 31px; /* Tinggi disesuaikan dengan tinggi logo/tombol logout + gap */
+      }
     }
 
     .result-card {
@@ -380,14 +386,17 @@
           </div>
         </div>
 
-        <!-- Kolom Kanan: Hasil Short Link -->
-        <div class="result-card" id="resultCard">
-          <div class="result-header">
-            <span>Hasil Short Links Kamu</span>
-            <button class="btn-copy-all" onclick="copyAllLinks()">SALIN SEMUA</button>
-          </div>
-          <div class="result-list" id="outputList">
-            <!-- List hasil short link akan muncul di sini -->
+        <!-- Kolom Kanan: Spacer agar sejajar dengan header kiri, lalu Hasil Short Link -->
+        <div style="display: flex; flex-direction: column;">
+          <div class="right-column-spacer"></div>
+          <div class="result-card" id="resultCard">
+            <div class="result-header">
+              <span>Hasil Short Links Kamu</span>
+              <button class="btn-copy-all" onclick="copyAllLinks()">SALIN SEMUA</button>
+            </div>
+            <div class="result-list" id="outputList">
+              <!-- List hasil short link akan muncul di sini -->
+            </div>
           </div>
         </div>
       </div>
