@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ROOM Link Shortener</title>
+  <title>Thegenz | Bulk Link Shortener</title>
   <!-- Library Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -266,9 +266,20 @@
         <div class="form-group">
           <label>Domain Mode</label>
           <div class="mode-selector">
-            <div class="mode-option active">AUTO</div>
-            <div class="mode-option">PICK</div>
+            <div class="mode-option active" id="modeAuto" onclick="setMode('AUTO')">AUTO</div>
+            <div class="mode-option" id="modePick" onclick="setMode('PICK')">DOMAIN</div>
           </div>
+        </div>
+
+        <!-- Dropdown Pilihan Domain (Muncul saat mode DOMAIN dipilih) -->
+        <div class="form-group" id="domainPickerGroup" style="display: none;">
+          <label>Pilih Domain Spesifik</label>
+          <select id="selectedDomain" style="width: 100%; background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; color: var(--text-main); outline: none;">
+            <option value="https://virginiaroom.biz.id">https://virginiaroom.biz.id</option>
+            <option value="https://www.roomdating.my.id">https://www.roomdating.my.id</option>
+            <option value="https://www.uslukusluk.eu.org">https://www.uslukusluk.eu.org</option>
+            <option value="https://www.uplakupluk.eu.org">https://www.uplakupluk.eu.org</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -300,13 +311,32 @@
     const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
     const sbClient = window.supabase.createClient(SUPABASE_URL_VAL, SUPABASE_KEY_VAL);
 
-    // Daftar Domain (Domain lama + Domain baru)
+    // Daftar Domain untuk Fitur Random / Pick
     const availableDomains = [
       'https://virginiaroom.biz.id',
       'https://www.roomdating.my.id',
       'https://www.uslukusluk.eu.org',
       'https://www.uplakupluk.eu.org'
     ];
+
+    let currentMode = 'AUTO';
+
+    function setMode(mode) {
+      currentMode = mode;
+      const autoEl = document.getElementById('modeAuto');
+      const pickEl = document.getElementById('modePick');
+      const pickerGroup = document.getElementById('domainPickerGroup');
+
+      if (mode === 'AUTO') {
+        autoEl.classList.add('active');
+        pickEl.classList.remove('active');
+        pickerGroup.style.display = 'none';
+      } else {
+        pickEl.classList.add('active');
+        autoEl.classList.remove('active');
+        pickerGroup.style.display = 'block';
+      }
+    }
 
     // Fungsi untuk mengambil domain secara acak
     function getRandomDomain() {
@@ -344,8 +374,13 @@
       for (let i = 0; i < urls.length; i++) {
         const randomId = Math.random().toString(36).substring(2, 7);
         
-        // Memilih domain secara random untuk setiap link
-        const chosenDomain = getRandomDomain();
+        // Memilih domain berdasarkan mode AUTO (acak) atau DOMAIN (pilihan spesifik)
+        let chosenDomain;
+        if (currentMode === 'AUTO') {
+          chosenDomain = getRandomDomain();
+        } else {
+          chosenDomain = document.getElementById('selectedDomain').value;
+        }
 
         rowsToInsert.push({
           id: randomId,
