@@ -42,7 +42,6 @@
       gap: 20px;
     }
 
-    /* Wrapper khusus setelah login agar bisa melebar menyesuaikan 2 kolom */
     .wrapper.app-active {
       max-width: 1000px;
     }
@@ -184,7 +183,6 @@
       background: var(--accent-hover);
     }
 
-    /* Layout 2 Kolom untuk Menu Utama */
     .dashboard-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -227,13 +225,11 @@
       align-items: center;
     }
 
+    /* Scrollbar dihapus, tinggi dibuat otomatis memanjang ke bawah */
     .result-list {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 350px;
-      overflow-y: auto;
-      padding-right: 4px;
     }
 
     .result-item {
@@ -325,9 +321,12 @@
     <!-- HALAMAN UTAMA (SHORTENER) -->
     <div id="mainApp" style="display: none; flex-direction: column; gap: 20px;">
       
+      <!-- Top Bar dengan Tombol Logout di posisi Lingkaran Kuning (Sebelah Kiri) -->
       <div class="top-bar">
-        <div class="brand">ROOM <span>//</span> Link Shortener</div>
-        <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <div class="brand">ROOM <span>//</span> Link Shortener</div>
+          <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
+        </div>
       </div>
 
       <div class="dashboard-grid">
@@ -369,7 +368,7 @@
           </form>
         </div>
 
-        <!-- Kolom Kanan: Hasil Short Link -->
+        <!-- Kolom Kanan: Hasil Short Link (Memanjang ke bawah tanpa scrollbar) -->
         <div class="result-card" id="resultCard">
           <div class="result-header">
             <span>Hasil Short Links Kamu</span>
