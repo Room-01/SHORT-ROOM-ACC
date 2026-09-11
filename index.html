@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thegenz | Bulk Link Shortener</title>
+  <title>ROOM Link Shortener</title>
   <!-- Library Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -300,6 +300,20 @@
     const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
     const sbClient = window.supabase.createClient(SUPABASE_URL_VAL, SUPABASE_KEY_VAL);
 
+    // Daftar Domain (Domain lama + Domain baru)
+    const availableDomains = [
+      'https://virginiaroom.biz.id',
+      'https://www.roomdating.my.id',
+      'https://www.uslukusluk.eu.org',
+      'https://www.uplakupluk.eu.org'
+    ];
+
+    // Fungsi untuk mengambil domain secara acak
+    function getRandomDomain() {
+      const randomIndex = Math.floor(Math.random() * availableDomains.length);
+      return availableDomains[randomIndex];
+    }
+
     let generatedLinksArray = [];
 
     document.getElementById('shortenerForm').addEventListener('submit', async function(e) {
@@ -329,13 +343,17 @@
 
       for (let i = 0; i < urls.length; i++) {
         const randomId = Math.random().toString(36).substring(2, 7);
+        
+        // Memilih domain secara random untuk setiap link
+        const chosenDomain = getRandomDomain();
+
         rowsToInsert.push({
           id: randomId,
           url: urls[i],
           title: titleVal,
           image: imageVal
         });
-        tempResults.push(`https://virginiaroom.biz.id/go?id=${randomId}`);
+        tempResults.push(`${chosenDomain}/go?id=${randomId}`);
       }
 
       const { error } = await sbClient.from('links').insert(rowsToInsert);
