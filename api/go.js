@@ -13,17 +13,21 @@ export default function handler(req, res) {
     const metaTitle = data.t || "Link Preview";
     const metaImage = data.i || "";
 
-    // Cek apakah yang mengunjungi link adalah Bot/Crawler Sosmed
+    // Cek apakah pengunjung adalah Bot/Crawler Sosmed
     const userAgent = req.headers['user-agent'] || '';
     const isBot = /facebookexternalhit|facebookcatalog|twitterbot|whatsapp|telegrambot|linkedinbot|pinterest/i.test(userAgent);
 
+    // Jika BUKAN bot (manusia/browser biasa), LANGSUNG REDIRECT tanpa landing page
+    if (!isBot) {
+      return res.redirect(302, targetUrl);
+    }
+
+    // Jika BOT sosmed, beri data HTML Meta Tags agar preview muncul
     const html = `
       <!DOCTYPE html>
       <html lang="id">
       <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
         <title>${metaTitle}</title>
         <meta property="og:title" content="${metaTitle}">
         <meta property="og:description" content="Klik untuk melihat tautan">
@@ -32,17 +36,8 @@ export default function handler(req, res) {
         ${metaImage ? `<meta property="og:image" content="${metaImage}">` : ''}
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="${metaTitle}">
-
-        ${!isBot ? `<meta http-equiv="refresh" content="0; url=${targetUrl}">` : ''}
       </head>
-      <body>
-        <p>Mengarahkan ke halaman tujuan...</p>
-        ${!isBot ? `
-        <script>
-          window.location.href = "${targetUrl}";
-        </script>
-        ` : ''}
-      </body>
+      <body></body>
       </html>
     `;
 
