@@ -196,6 +196,20 @@
       }
     }
 
+    /* Mengatur lebar area kiri agar tombol logout tepat di atas garis tepi kanan kartu */
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .top-bar-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 5px;
+    }
+
     .result-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -321,52 +335,53 @@
     <!-- HALAMAN UTAMA (SHORTENER) -->
     <div id="mainApp" style="display: none; flex-direction: column; gap: 20px;">
       
-      <!-- Top Bar: Logo di Kiri, Tombol Logout dipindah ke Kanan (Sesuai Lingkaran Merah) -->
-      <div class="top-bar">
-        <div class="brand">ROOM <span>//</span> Link Shortener</div>
-        <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
-      </div>
-
       <div class="dashboard-grid">
-        <!-- Kolom Kiri: Form Shortener -->
-        <div class="card">
-          <form id="shortenerForm">
-            
-            <div class="form-group">
-              <label>Destination URLs (Satu URL per baris)</label>
-              <textarea id="targetUrl" placeholder="https://domain1.com/promo&#10;https://domain2.com/produk&#10;https://domain3.com/artikel" required></textarea>
-            </div>
+        <!-- Kolom Kiri: Memuat Header (Logo & Logout) dan Form Shortener -->
+        <div class="left-column">
+          <div class="top-bar-inner">
+            <div class="brand">ROOM <span>//</span> Link Shortener</div>
+            <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
+          </div>
 
-            <div class="form-group">
-              <label>Domain Mode</label>
-              <div class="mode-selector">
-                <div class="mode-option active" id="modeAuto" onclick="setMode('AUTO')">AUTO</div>
-                <div class="mode-option" id="modePick" onclick="setMode('DOMAIN')">DOMAIN</div>
+          <div class="card">
+            <form id="shortenerForm">
+              
+              <div class="form-group">
+                <label>Destination URLs (Satu URL per baris)</label>
+                <textarea id="targetUrl" placeholder="https://domain1.com/promo&#10;https://domain2.com/produk&#10;https://domain3.com/artikel" required></textarea>
               </div>
-            </div>
 
-            <div class="form-group" id="domainPickerGroup" style="display: none;">
-              <label>Pilih Domain Spesifik</label>
-              <select id="selectedDomain" style="width: 100%; background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; color: var(--text-main); outline: none;">
-                <option value="https://virginiaroom.biz.id">https://virginiaroom.biz.id</option>
-                <option value="https://www.roomdating.my.id">https://www.roomdating.my.id</option>
-                <option value="https://www.uslukusluk.eu.org">https://www.uslukusluk.eu.org</option>
-                <option value="https://www.uplakupluk.eu.org">https://www.uplakupluk.eu.org</option>
-              </select>
-            </div>
+              <div class="form-group">
+                <label>Domain Mode</label>
+                <div class="mode-selector">
+                  <div class="mode-option active" id="modeAuto" onclick="setMode('AUTO')">AUTO</div>
+                  <div class="mode-option" id="modePick" onclick="setMode('DOMAIN')">DOMAIN</div>
+                </div>
+              </div>
 
-            <div class="form-group">
-              <label>Meta Details (Opsional, berlaku untuk semua)</label>
-              <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
-              <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
-            </div>
+              <div class="form-group" id="domainPickerGroup" style="display: none;">
+                <label>Pilih Domain Spesifik</label>
+                <select id="selectedDomain" style="width: 100%; background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; color: var(--text-main); outline: none;">
+                  <option value="https://virginiaroom.biz.id">https://virginiaroom.biz.id</option>
+                  <option value="https://www.roomdating.my.id">https://www.roomdating.my.id</option>
+                  <option value="https://www.uslukusluk.eu.org">https://www.uslukusluk.eu.org</option>
+                  <option value="https://www.uplakupluk.eu.org">https://www.uplakupluk.eu.org</option>
+                </select>
+              </div>
 
-            <button type="submit" class="btn-generate" id="btnSubmit">GENERATE ALL LINKS</button>
+              <div class="form-group">
+                <label>Meta Details (Opsional, berlaku untuk semua)</label>
+                <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
+                <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
+              </div>
 
-          </form>
+              <button type="submit" class="btn-generate" id="btnSubmit">GENERATE ALL LINKS</button>
+
+            </form>
+          </div>
         </div>
 
-        <!-- Kolom Kanan: Hasil Short Link (Memanjang ke bawah tanpa scrollbar) -->
+        <!-- Kolom Kanan: Hasil Short Link -->
         <div class="result-card" id="resultCard">
           <div class="result-header">
             <span>Hasil Short Links Kamu</span>
@@ -439,9 +454,9 @@
 
     const availableDomains = [
       'https://virginiaroom.biz.id',
-      'https://roomdating.my.id',
-      'https://uslukusluk.eu.org',
-      'https://uplakupluk.eu.org'
+      'https://www.roomdating.my.id',
+      'https://www.uslukusluk.eu.org',
+      'https://www.uplakupluk.eu.org'
     ];
 
     let currentMode = 'AUTO';
