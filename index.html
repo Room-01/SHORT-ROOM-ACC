@@ -162,13 +162,13 @@
       background: var(--accent-hover);
     }
 
-    /* Result Box (Area Baru untuk Hasil) */
+    /* Result Box */
     .result-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 16px;
       padding: 24px;
-      display: none; /* Muncul hanya jika ada hasil */
+      display: none;
     }
 
     .result-card.active {
@@ -197,12 +197,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
     }
 
     .result-url {
       color: var(--accent-color);
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
+      word-break: break-all;
     }
 
     .btn-copy {
@@ -214,6 +216,7 @@
       font-size: 0.75rem;
       font-weight: 800;
       cursor: pointer;
+      flex-shrink: 0;
     }
 
     .btn-copy:hover {
@@ -250,8 +253,8 @@
 
         <div class="form-group">
           <label>Meta Details</label>
-          <input type="text" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
-          <input type="text" placeholder="Image URL (Opsional)">
+          <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
+          <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
         </div>
 
         <button type="submit" class="btn-generate">GENERATE LINK</button>
@@ -259,11 +262,11 @@
       </form>
     </div>
 
-    <!-- Result Section (Di Bawah Form) -->
+    <!-- Result Section -->
     <div class="result-card" id="resultCard">
       <div class="result-header">Hasil Short Link Kamu</div>
       <div class="result-box">
-        <span class="result-url" id="outputUrl">https://domain-kamu.com/xyz12</span>
+        <span class="result-url" id="outputUrl">https://virginiaroom.biz.id/go...</span>
         <button class="btn-copy" onclick="copyToClipboard()">COPY LINK</button>
       </div>
     </div>
@@ -275,14 +278,23 @@
       e.preventDefault();
 
       const inputUrl = document.getElementById('targetUrl').value.trim();
+      const titleVal = document.getElementById('metaTitle').value.trim();
+      const imageVal = document.getElementById('metaImage').value.trim();
+      
       const resultCard = document.getElementById('resultCard');
       const outputUrl = document.getElementById('outputUrl');
 
       if (!inputUrl) return;
 
-      // Ambil kode acak
-      const randomSlug = Math.random().toString(36).substring(2, 7);
-      const generatedLink = `http://virginiaroom.biz.id/${randomSlug}`;
+      // Menyusun URL generator yang membawa parameter url, title, & image
+      let generatedLink = `https://virginiaroom.biz.id/go?url=${encodeURIComponent(inputUrl)}`;
+
+      if (titleVal) {
+        generatedLink += `&title=${encodeURIComponent(titleVal)}`;
+      }
+      if (imageVal) {
+        generatedLink += `&image=${encodeURIComponent(imageVal)}`;
+      }
 
       // Update isi URL dan tampilkan kartu hasil
       outputUrl.innerText = generatedLink;
@@ -292,7 +304,7 @@
     function copyToClipboard() {
       const urlText = document.getElementById('outputUrl').innerText;
       navigator.clipboard.writeText(urlText);
-      alert('Link berhasil disalin: ' + urlText);
+      alert('Link berhasil disalin!');
     }
   </script>
 
