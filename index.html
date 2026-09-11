@@ -68,6 +68,8 @@
       padding: 6px 14px;
       border-radius: 20px;
       transition: all 0.2s;
+      cursor: pointer;
+      background: transparent;
     }
 
     .logout-btn:hover {
@@ -96,7 +98,7 @@
       letter-spacing: 0.5px;
     }
 
-    textarea, input[type="text"] {
+    textarea, input[type="text"], input[type="password"] {
       width: 100%;
       background: #0f172a;
       border: 1px solid var(--border-color);
@@ -108,7 +110,7 @@
       transition: border-color 0.2s;
     }
 
-    textarea:focus, input[type="text"]:focus {
+    textarea:focus, input[type="text"]:focus, input[type="password"]:focus {
       border-color: var(--accent-color);
     }
 
@@ -142,7 +144,7 @@
       color: #000;
     }
 
-    .btn-generate {
+    .btn-generate, .btn-login {
       width: 100%;
       background: var(--accent-color);
       color: #000000;
@@ -156,7 +158,7 @@
       transition: background 0.2s;
     }
 
-    .btn-generate:hover {
+    .btn-generate:hover, .btn-login:hover {
       background: var(--accent-hover);
     }
 
@@ -244,68 +246,135 @@
       cursor: pointer;
       transition: all 0.2s;
     }
+
+    .error-msg {
+      color: #ef4444;
+      font-size: 0.8rem;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
   </style>
 </head>
 <body>
 
   <div class="wrapper">
     
-    <div class="top-bar">
-      <div class="brand">ROOM <span>//</span> Link Shortener</div>
-      <a href="#" class="logout-btn">LOGOUT</a>
-    </div>
-
-    <div class="card">
-      <form id="shortenerForm">
-        
+    <!-- HALAMAN LOGIN -->
+    <div class="card" id="loginCard">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="font-size: 1.2rem; font-weight: 800;">ROOM <span>//</span> Login</h2>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Masukkan Username & Password</p>
+      </div>
+      <form id="loginForm">
         <div class="form-group">
-          <label>Destination URLs (Satu URL per baris)</label>
-          <textarea id="targetUrl" placeholder="https://domain1.com/promo&#10;https://domain2.com/produk&#10;https://domain3.com/artikel" required></textarea>
+          <label>Username</label>
+          <input type="text" id="loginUser" placeholder="Masukkan username" required>
         </div>
-
         <div class="form-group">
-          <label>Domain Mode</label>
-          <div class="mode-selector">
-            <div class="mode-option active" id="modeAuto" onclick="setMode('AUTO')">AUTO</div>
-            <div class="mode-option" id="modePick" onclick="setMode('PICK')">DOMAIN</div>
-          </div>
+          <label>Password</label>
+          <input type="password" id="loginPass" placeholder="Masukkan password" required>
         </div>
-
-        <!-- Dropdown Pilihan Domain (Muncul saat mode DOMAIN dipilih) -->
-        <div class="form-group" id="domainPickerGroup" style="display: none;">
-          <label>Pilih Domain Spesifik</label>
-          <select id="selectedDomain" style="width: 100%; background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; color: var(--text-main); outline: none;">
-            <option value="https://virginiaroom.biz.id">https://virginiaroom.biz.id</option>
-            <option value="https://www.roomdating.my.id">https://www.roomdating.my.id</option>
-            <option value="https://www.uslukusluk.eu.org">https://www.uslukusluk.eu.org</option>
-            <option value="https://www.uplakupluk.eu.org">https://www.uplakupluk.eu.org</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Meta Details (Opsional, berlaku untuk semua)</label>
-          <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
-          <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
-        </div>
-
-        <button type="submit" class="btn-generate" id="btnSubmit">GENERATE ALL LINKS</button>
-
+        <button type="submit" class="btn-login">MASUK</button>
+        <div class="error-msg" id="loginError">Username atau Password salah!</div>
       </form>
     </div>
 
-    <div class="result-card" id="resultCard">
-      <div class="result-header">
-        <span>Hasil Short Links Kamu</span>
-        <button class="btn-copy-all" onclick="copyAllLinks()">SALIN SEMUA</button>
+    <!-- HALAMAN UTAMA (SHORTENER) -->
+    <div id="mainApp" style="display: none; display: flex; flex-direction: column; gap: 20px;">
+      
+      <div class="top-bar">
+        <div class="brand">ROOM <span>//</span> Link Shortener</div>
+        <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
       </div>
-      <div class="result-list" id="outputList">
-        <!-- List hasil short link akan muncul di sini -->
+
+      <div class="card">
+        <form id="shortenerForm">
+          
+          <div class="form-group">
+            <label>Destination URLs (Satu URL per baris)</label>
+            <textarea id="targetUrl" placeholder="https://domain1.com/promo&#10;https://domain2.com/produk&#10;https://domain3.com/artikel" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Domain Mode</label>
+            <div class="mode-selector">
+              <div class="mode-option active" id="modeAuto" onclick="setMode('AUTO')">AUTO</div>
+              <div class="mode-option" id="modePick" onclick="setMode('PICK')">DOMAIN</div>
+            </div>
+          </div>
+
+          <!-- Dropdown Pilihan Domain (Muncul saat mode DOMAIN dipilih) -->
+          <div class="form-group" id="domainPickerGroup" style="display: none;">
+            <label>Pilih Domain Spesifik</label>
+            <select id="selectedDomain" style="width: 100%; background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; color: var(--text-main); outline: none;">
+              <option value="https://virginiaroom.biz.id">https://virginiaroom.biz.id</option>
+              <option value="https://www.roomdating.my.id">https://www.roomdating.my.id</option>
+              <option value="https://www.uslukusluk.eu.org">https://www.uslukusluk.eu.org</option>
+              <option value="https://www.uplakupluk.eu.org">https://www.uplakupluk.eu.org</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Meta Details (Opsional, berlaku untuk semua)</label>
+            <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
+            <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
+          </div>
+
+          <button type="submit" class="btn-generate" id="btnSubmit">GENERATE ALL LINKS</button>
+
+        </form>
       </div>
+
+      <div class="result-card" id="resultCard">
+        <div class="result-header">
+          <span>Hasil Short Links Kamu</span>
+          <button class="btn-copy-all" onclick="copyAllLinks()">SALIN SEMUA</button>
+        </div>
+        <div class="result-list" id="outputList">
+          <!-- List hasil short link akan muncul di sini -->
+        </div>
+      </div>
+
     </div>
 
   </div>
 
   <script>
+    // --- USERNAME & PASSWORD BARU ---
+    const ADMIN_USER = "ROOMUSER"; 
+    const ADMIN_PASS = "ROOMUSER"; 
+
+    // Cek status login saat halaman dibuka
+    window.onload = function() {
+      if (localStorage.getItem("isLoggedIn") === "true") {
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+      }
+    }
+
+    // Proses Login
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUser').value.trim();
+      const p = document.getElementById('loginPass').value.trim();
+      const err = document.getElementById('loginError');
+
+      if (u === ADMIN_USER && p === ADMIN_PASS) {
+        localStorage.setItem("isLoggedIn", "true");
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+      } else {
+        err.style.display = 'block';
+      }
+    });
+
+    // Proses Logout
+    function handleLogout() {
+      localStorage.removeItem("isLoggedIn");
+      location.reload();
+    }
+
     // Konfigurasi Supabase
     const SUPABASE_URL_VAL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
     const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
@@ -338,7 +407,6 @@
       }
     }
 
-    // Fungsi untuk mengambil domain secara acak
     function getRandomDomain() {
       const randomIndex = Math.floor(Math.random() * availableDomains.length);
       return availableDomains[randomIndex];
@@ -374,7 +442,6 @@
       for (let i = 0; i < urls.length; i++) {
         const randomId = Math.random().toString(36).substring(2, 7);
         
-        // Memilih domain berdasarkan mode AUTO (acak) atau DOMAIN (pilihan spesifik)
         let chosenDomain;
         if (currentMode === 'AUTO') {
           chosenDomain = getRandomDomain();
