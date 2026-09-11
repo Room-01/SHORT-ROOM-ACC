@@ -269,9 +269,9 @@
 
   <script>
     // Konfigurasi Supabase
-    const SUPABASE_URL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
-    const SUPABASE_KEY = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_URL_VAL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
+    const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
+    const sbClient = window.supabase.createClient(SUPABASE_URL_VAL, SUPABASE_KEY_VAL);
 
     document.getElementById('shortenerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -293,7 +293,7 @@
       const randomId = Math.random().toString(36).substring(2, 7);
 
       // Simpan ke Supabase
-      const { error } = await supabase.from('links').insert([
+      const { error } = await sbClient.from('links').insert([
         { id: randomId, url: inputUrl, title: titleVal, image: imageVal }
       ]);
 
