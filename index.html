@@ -119,6 +119,23 @@
       resize: vertical;
     }
 
+    .remember-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .remember-group input[type="checkbox"] {
+      accent-color: var(--accent-color);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
     .mode-selector {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -275,12 +292,19 @@
           <label>Password</label>
           <input type="password" id="loginPass" placeholder="Masukkan password" required>
         </div>
+        
+        <!-- Opsi Ingat Saya -->
+        <div class="remember-group">
+          <input type="checkbox" id="rememberMe">
+          <label for="rememberMe" style="display:inline; color:var(--text-muted); text-transform:none; cursor:pointer;">Ingat sandi saya (Tetap masuk)</label>
+        </div>
+
         <button type="submit" class="btn-login">MASUK</button>
         <div class="error-msg" id="loginError">Username atau Password salah!</div>
       </form>
     </div>
 
-    <!-- HALAMAN UTAMA (SHORTENER) - Murni disembunyikan pakai display: none -->
+    <!-- HALAMAN UTAMA (SHORTENER) -->
     <div id="mainApp" style="display: none; flex-direction: column; gap: 20px;">
       
       <div class="top-bar">
@@ -300,11 +324,11 @@
             <label>Domain Mode</label>
             <div class="mode-selector">
               <div class="mode-option active" id="modeAuto" onclick="setMode('AUTO')">AUTO</div>
-              <div class="mode-option" id="modePick" onclick="setMode('PICK')">DOMAIN</div>
+              <div class="mode-option" id="modePick" onclick="setMode('DOMAIN')">DOMAIN</div>
             </div>
           </div>
 
-          <!-- Dropdown Pilihan Domain (Muncul saat mode DOMAIN dipilih) -->
+          <!-- Dropdown Pilihan Domain -->
           <div class="form-group" id="domainPickerGroup" style="display: none;">
             <label>Pilih Domain Spesifik</label>
             <select id="selectedDomain" style="width: 100%; background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; color: var(--text-main); outline: none;">
@@ -345,11 +369,20 @@
     const ADMIN_USER = "ROOMUSER"; 
     const ADMIN_PASS = "ROOMUSER"; 
 
-    // Cek status login saat halaman dibuka
+    // Cek status login & autofill saat halaman dibuka
     window.onload = function() {
       if (localStorage.getItem("isLoggedIn") === "true") {
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
+      }
+
+      // Ambil data sandi tersimpan jika ada
+      const savedUser = localStorage.getItem("savedUser");
+      const savedPass = localStorage.getItem("savedPass");
+      if (savedUser && savedPass) {
+        document.getElementById('loginUser').value = savedUser;
+        document.getElementById('loginPass').value = savedPass;
+        document.getElementById('rememberMe').checked = true;
       }
     }
 
@@ -358,10 +391,21 @@
       e.preventDefault();
       const u = document.getElementById('loginUser').value.trim();
       const p = document.getElementById('loginPass').value.trim();
+      const remember = document.getElementById('rememberMe').checked;
       const err = document.getElementById('loginError');
 
       if (u === ADMIN_USER && p === ADMIN_PASS) {
         localStorage.setItem("isLoggedIn", "true");
+
+        // Jika centang ingat sandi aktif, simpan di localStorage browser
+        if (remember) {
+          localStorage.setItem("savedUser", u);
+          localStorage.setItem("savedPass", p);
+        } else {
+          localStorage.removeItem("savedUser");
+          localStorage.removeItem("savedPass");
+        }
+
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
       } else {
@@ -372,6 +416,8 @@
     // Proses Logout
     function handleLogout() {
       localStorage.removeItem("isLoggedIn");
+      // Catatan: savedUser dan savedPass dibiarkan agar tidak perlu ketik ulang pas login lagi, 
+      // kecuali Anda ingin menghapusnya juga.
       location.reload();
     }
 
