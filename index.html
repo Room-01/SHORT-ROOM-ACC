@@ -1,298 +1,4 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thegenz | Bulk Link Shortener</title>
-  <!-- Library Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --accent-color: #10b981;
-      --accent-hover: #059669;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: #334155;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      padding: 40px 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .wrapper {
-      width: 100%;
-      max-width: 650px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 5px;
-    }
-
-    .brand {
-      font-size: 1rem;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-    }
-
-    .brand span {
-      color: var(--accent-color);
-    }
-
-    .logout-btn {
-      color: #ef4444;
-      text-decoration: none;
-      font-size: 0.8rem;
-      font-weight: 700;
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      padding: 6px 14px;
-      border-radius: 20px;
-      transition: all 0.2s;
-    }
-
-    .logout-btn:hover {
-      background: rgba(239, 68, 68, 0.1);
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
-    }
-
-    textarea, input[type="text"] {
-      width: 100%;
-      background: #0f172a;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 0.9rem;
-      color: var(--text-main);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    textarea:focus, input[type="text"]:focus {
-      border-color: var(--accent-color);
-    }
-
-    textarea {
-      height: 120px;
-      resize: vertical;
-    }
-
-    .mode-selector {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: #0f172a;
-      padding: 4px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-    }
-
-    .mode-option {
-      text-align: center;
-      padding: 8px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      border-radius: 8px;
-      cursor: pointer;
-      color: var(--text-muted);
-      transition: all 0.2s;
-    }
-
-    .mode-option.active {
-      background: var(--accent-color);
-      color: #000;
-    }
-
-    .btn-generate {
-      width: 100%;
-      background: var(--accent-color);
-      color: #000000;
-      border: none;
-      padding: 14px;
-      border-radius: 10px;
-      font-weight: 800;
-      font-size: 0.9rem;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn-generate:hover {
-      background: var(--accent-hover);
-    }
-
-    .result-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 24px;
-      display: none;
-    }
-
-    .result-card.active {
-      display: block;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .result-header {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .result-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 250px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-
-    .result-item {
-      background: #0f172a;
-      border: 1px dashed var(--accent-color);
-      border-radius: 10px;
-      padding: 10px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .result-url {
-      color: var(--accent-color);
-      font-weight: 700;
-      font-size: 0.8rem;
-      word-break: break-all;
-    }
-
-    .btn-copy {
-      background: #ffffff;
-      color: #000000;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      font-weight: 800;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .btn-copy:hover {
-      background: #e2e8f0;
-    }
-
-    .btn-copy-all {
-      background: var(--accent-color);
-      color: #000;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      font-weight: 800;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="wrapper">
-    
-    <div class="top-bar">
-      <div class="brand">Thegenz <span>//</span> Bulk Shortener</div>
-      <a href="#" class="logout-btn">LOGOUT</a>
-    </div>
-
-    <div class="card">
-      <form id="shortenerForm">
-        
-        <div class="form-group">
-          <label>Destination URLs (Satu URL per baris)</label>
-          <textarea id="targetUrl" placeholder="https://domain1.com/promo&#10;https://domain2.com/produk&#10;https://domain3.com/artikel" required></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Domain Mode</label>
-          <div class="mode-selector">
-            <div class="mode-option active">AUTO</div>
-            <div class="mode-option">PICK</div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Meta Details (Opsional, berlaku untuk semua)</label>
-          <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
-          <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
-        </div>
-
-        <button type="submit" class="btn-generate" id="btnSubmit">GENERATE ALL LINKS</button>
-
-      </form>
-    </div>
-
-    <div class="result-card" id="resultCard">
-      <div class="result-header">
-        <span>Hasil Short Links Kamu</span>
-        <button class="btn-copy-all" onclick="copyAllLinks()">SALIN SEMUA</button>
-      </div>
-      <div class="result-list" id="outputList">
-        <!-- List hasil short link akan muncul di sini -->
-      </div>
-    </div>
-
-  </div>
-
-  <script>
+<script>
     // Konfigurasi Supabase
     const SUPABASE_URL_VAL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
     const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
@@ -313,7 +19,6 @@
 
       if (!rawText) return;
 
-      // Pecah teks berdasarkan baris baru dan bersihkan spasi kosong
       const urls = rawText.split('\n')
                           .map(u => u.trim())
                           .filter(u => u.length > 0);
@@ -326,7 +31,6 @@
       const rowsToInsert = [];
       const tempResults = [];
 
-      // Siapkan data untuk tiap URL
       for (let i = 0; i < urls.length; i++) {
         const randomId = Math.random().toString(36).substring(2, 7);
         rowsToInsert.push({
@@ -338,7 +42,6 @@
         tempResults.push(`https://virginiaroom.biz.id/go?id=${randomId}`);
       }
 
-      // Kirim sekaligus (bulk insert) ke Supabase
       const { error } = await sbClient.from('links').insert(rowsToInsert);
 
       btn.innerText = "GENERATE ALL LINKS";
@@ -352,13 +55,12 @@
       generatedLinksArray = tempResults;
       outputList.innerHTML = '';
 
-      // Tampilkan hasil ke dalam bentuk list
       tempResults.forEach((link) => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'result-item';
         itemDiv.innerHTML = `
           <span class="result-url">${link}</span>
-          <button class="btn-copy" onclick="copySingle('${link}')">SALIN</button>
+          <button class="btn-copy" onclick="copySingle(this, '${link}')">SALIN</button>
         `;
         outputList.appendChild(itemDiv);
       });
@@ -366,17 +68,31 @@
       resultCard.classList.add('active');
     });
 
-    function copySingle(text) {
+    // Tanpa pop-up, tombol berubah teksnya jadi "DISALIN!" sebentar
+    function copySingle(element, text) {
       navigator.clipboard.writeText(text);
-      alert('Link berhasil disalin: ' + text);
+      const originalText = element.innerText;
+      element.innerText = "DISALIN!";
+      element.style.background = "#10b981";
+      element.style.color = "#000";
+      
+      setTimeout(() => {
+        element.innerText = originalText;
+        element.style.background = "#ffffff";
+        element.style.color = "#000000";
+      }, 1500);
     }
 
     function copyAllLinks() {
       const allText = generatedLinksArray.join('\n');
       navigator.clipboard.writeText(allText);
-      alert('Semua link berhasil disalin!');
+      
+      const btnAll = document.querySelector('.btn-copy-all');
+      const originalText = btnAll.innerText;
+      btnAll.innerText = "SEMUA DISALIN!";
+      
+      setTimeout(() => {
+        btnAll.innerText = originalText;
+      }, 1500);
     }
   </script>
-
-</body>
-</html>
