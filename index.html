@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ROOM | Link Shortener</title>
+  
+  <!-- Favicon (Ikon Tab Browser) -->
+  <link rel="icon" type="image/jpeg" href="https://i.imgur.com/8k3Ddag.jpeg">
+
   <!-- Library Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -185,7 +189,6 @@
     @media (min-width: 768px) {
       .dashboard-grid {
         grid-template-columns: 1fr 1fr;
-        /* Menggunakan alignItems start agar card kanan tidak ikut merenggang ke bawah mengikuti tinggi card kiri */
         align-items: start; 
       }
     }
@@ -203,7 +206,6 @@
       padding: 0 5px;
     }
 
-    /* Mengatur tinggi baris atas pada kolom kanan (kosong) agar sejajar dengan tinggi baris header (logo & logout) di sebelah kiri */
     .right-column-spacer {
       display: none;
     }
@@ -211,7 +213,7 @@
     @media (min-width: 768px) {
       .right-column-spacer {
         display: block;
-        height: 31px; /* Tinggi disesuaikan dengan tinggi logo/tombol logout + gap */
+        height: 31px;
       }
     }
 
