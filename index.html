@@ -51,6 +51,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 0 5px;
+      width: 100%;
     }
 
     .brand {
@@ -225,7 +226,6 @@
       align-items: center;
     }
 
-    /* Scrollbar dihapus, tinggi dibuat otomatis memanjang ke bawah */
     .result-list {
       display: flex;
       flex-direction: column;
@@ -321,12 +321,10 @@
     <!-- HALAMAN UTAMA (SHORTENER) -->
     <div id="mainApp" style="display: none; flex-direction: column; gap: 20px;">
       
-      <!-- Top Bar dengan Tombol Logout di posisi Lingkaran Kuning (Sebelah Kiri) -->
+      <!-- Top Bar: Logo di Kiri, Tombol Logout dipindah ke Kanan (Sesuai Lingkaran Merah) -->
       <div class="top-bar">
-        <div style="display: flex; align-items: center; gap: 15px;">
-          <div class="brand">ROOM <span>//</span> Link Shortener</div>
-          <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
-        </div>
+        <div class="brand">ROOM <span>//</span> Link Shortener</div>
+        <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
       </div>
 
       <div class="dashboard-grid">
@@ -441,9 +439,9 @@
 
     const availableDomains = [
       'https://virginiaroom.biz.id',
-      'https://www.roomdating.my.id',
-      'https://www.uslukusluk.eu.org',
-      'https://www.uplakupluk.eu.org'
+      'https://roomdating.my.id',
+      'https://uslukusluk.eu.org',
+      'https://uplakupluk.eu.org'
     ];
 
     let currentMode = 'AUTO';
