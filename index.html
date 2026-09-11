@@ -40,7 +40,6 @@
       gap: 20px;
     }
 
-    /* Top Bar Header */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -73,7 +72,6 @@
       background: rgba(239, 68, 68, 0.1);
     }
 
-    /* Main Form Card */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -117,7 +115,6 @@
       resize: none;
     }
 
-    /* Pill Selector Custom */
     .mode-selector {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -143,7 +140,6 @@
       color: #000;
     }
 
-    /* Generate Button */
     .btn-generate {
       width: 100%;
       background: var(--accent-color);
@@ -162,7 +158,6 @@
       background: var(--accent-hover);
     }
 
-    /* Result Box */
     .result-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -228,13 +223,11 @@
 
   <div class="wrapper">
     
-    <!-- Top Navigation -->
     <div class="top-bar">
       <div class="brand">Thegenz <span>//</span> Link Shortener</div>
       <a href="#" class="logout-btn">LOGOUT</a>
     </div>
 
-    <!-- Form Generator -->
     <div class="card">
       <form id="shortenerForm">
         
@@ -262,7 +255,6 @@
       </form>
     </div>
 
-    <!-- Result Section -->
     <div class="result-card" id="resultCard">
       <div class="result-header">Hasil Short Link Kamu</div>
       <div class="result-box">
@@ -286,17 +278,20 @@
 
       if (!inputUrl) return;
 
-      // Menyusun URL generator yang membawa parameter url, title, & image
-      let generatedLink = `https://virginiaroom.biz.id/go?url=${encodeURIComponent(inputUrl)}`;
+      // Bundel data jadi satu objek
+      const payload = {
+        u: inputUrl,
+        t: titleVal || "",
+        i: imageVal || ""
+      };
 
-      if (titleVal) {
-        generatedLink += `&title=${encodeURIComponent(titleVal)}`;
-      }
-      if (imageVal) {
-        generatedLink += `&image=${encodeURIComponent(imageVal)}`;
-      }
+      // Kompres/Enkripsi data jadi string acak pendek (Base64)
+      const jsonString = JSON.stringify(payload);
+      const encodedData = btoa(encodeURIComponent(jsonString));
 
-      // Update isi URL dan tampilkan kartu hasil
+      // Hasil link acak pendek
+      const generatedLink = `https://virginiaroom.biz.id/go?d=${encodedData}`;
+
       outputUrl.innerText = generatedLink;
       resultCard.classList.add('active');
     });
