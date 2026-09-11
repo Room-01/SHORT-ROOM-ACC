@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thegenz | Link Shortener v2</title>
+  <!-- Library Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -250,7 +252,7 @@
           <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
         </div>
 
-        <button type="submit" class="btn-generate">GENERATE LINK</button>
+        <button type="submit" class="btn-generate" id="btnSubmit">GENERATE LINK</button>
 
       </form>
     </div>
@@ -266,9 +268,15 @@
   </div>
 
   <script>
-    document.getElementById('shortenerForm').addEventListener('submit', function(e) {
+    // Konfigurasi Supabase
+    const SUPABASE_URL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
+    const SUPABASE_KEY = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    document.getElementById('shortenerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
+      const btn = document.getElementById('btnSubmit');
       const inputUrl = document.getElementById('targetUrl').value.trim();
       const titleVal = document.getElementById('metaTitle').value.trim();
       const imageVal = document.getElementById('metaImage').value.trim();
@@ -278,19 +286,27 @@
 
       if (!inputUrl) return;
 
-      // Bundel data jadi satu objek
-      const payload = {
-        u: inputUrl,
-        t: titleVal || "",
-        i: imageVal || ""
-      };
+      btn.innerText = "SAVING...";
+      btn.disabled = true;
 
-      // Kompres/Enkripsi data jadi string acak pendek (Base64)
-      const jsonString = JSON.stringify(payload);
-      const encodedData = btoa(encodeURIComponent(jsonString));
+      // ID acak 5 karakter
+      const randomId = Math.random().toString(36).substring(2, 7);
 
-      // Hasil link acak pendek
-      const generatedLink = `https://virginiaroom.biz.id/go?d=${encodedData}`;
+      // Simpan ke Supabase
+      const { error } = await supabase.from('links').insert([
+        { id: randomId, url: inputUrl, title: titleVal, image: imageVal }
+      ]);
+
+      btn.innerText = "GENERATE LINK";
+      btn.disabled = false;
+
+      if (error) {
+        alert('Gagal menyimpan link: ' + error.message);
+        return;
+      }
+
+      // Link pendek
+      const generatedLink = `https://virginiaroom.biz.id/go?id=${randomId}`;
 
       outputUrl.innerText = generatedLink;
       resultCard.classList.add('active');
