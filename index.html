@@ -42,6 +42,11 @@
       gap: 20px;
     }
 
+    /* Wrapper khusus setelah login agar bisa melebar menyesuaikan 2 kolom */
+    .wrapper.app-active {
+      max-width: 1000px;
+    }
+
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -179,12 +184,26 @@
       background: var(--accent-hover);
     }
 
+    /* Layout 2 Kolom untuk Menu Utama */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
     .result-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 16px;
       padding: 24px;
       display: none;
+      height: fit-content;
     }
 
     .result-card.active {
@@ -212,7 +231,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 250px;
+      max-height: 350px;
       overflow-y: auto;
       padding-right: 4px;
     }
@@ -275,7 +294,7 @@
 </head>
 <body>
 
-  <div class="wrapper">
+  <div class="wrapper" id="mainWrapper">
     
     <!-- HALAMAN LOGIN -->
     <div class="card" id="loginCard">
@@ -293,7 +312,6 @@
           <input type="password" id="loginPass" placeholder="Masukkan password" required>
         </div>
         
-        <!-- Opsi Ingat Saya -->
         <div class="remember-group">
           <input type="checkbox" id="rememberMe">
           <label for="rememberMe" style="display:inline; color:var(--text-muted); text-transform:none; cursor:pointer;">Ingat sandi saya (Tetap masuk)</label>
@@ -312,51 +330,54 @@
         <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
       </div>
 
-      <div class="card">
-        <form id="shortenerForm">
-          
-          <div class="form-group">
-            <label>Destination URLs (Satu URL per baris)</label>
-            <textarea id="targetUrl" placeholder="https://domain1.com/promo&#10;https://domain2.com/produk&#10;https://domain3.com/artikel" required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Domain Mode</label>
-            <div class="mode-selector">
-              <div class="mode-option active" id="modeAuto" onclick="setMode('AUTO')">AUTO</div>
-              <div class="mode-option" id="modePick" onclick="setMode('DOMAIN')">DOMAIN</div>
+      <div class="dashboard-grid">
+        <!-- Kolom Kiri: Form Shortener -->
+        <div class="card">
+          <form id="shortenerForm">
+            
+            <div class="form-group">
+              <label>Destination URLs (Satu URL per baris)</label>
+              <textarea id="targetUrl" placeholder="https://domain1.com/promo&#10;https://domain2.com/produk&#10;https://domain3.com/artikel" required></textarea>
             </div>
-          </div>
 
-          <!-- Dropdown Pilihan Domain -->
-          <div class="form-group" id="domainPickerGroup" style="display: none;">
-            <label>Pilih Domain Spesifik</label>
-            <select id="selectedDomain" style="width: 100%; background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; color: var(--text-main); outline: none;">
-              <option value="https://virginiaroom.biz.id">https://virginiaroom.biz.id</option>
-              <option value="https://www.roomdating.my.id">https://www.roomdating.my.id</option>
-              <option value="https://www.uslukusluk.eu.org">https://www.uslukusluk.eu.org</option>
-              <option value="https://www.uplakupluk.eu.org">https://www.uplakupluk.eu.org</option>
-            </select>
-          </div>
+            <div class="form-group">
+              <label>Domain Mode</label>
+              <div class="mode-selector">
+                <div class="mode-option active" id="modeAuto" onclick="setMode('AUTO')">AUTO</div>
+                <div class="mode-option" id="modePick" onclick="setMode('DOMAIN')">DOMAIN</div>
+              </div>
+            </div>
 
-          <div class="form-group">
-            <label>Meta Details (Opsional, berlaku untuk semua)</label>
-            <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
-            <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
-          </div>
+            <div class="form-group" id="domainPickerGroup" style="display: none;">
+              <label>Pilih Domain Spesifik</label>
+              <select id="selectedDomain" style="width: 100%; background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; color: var(--text-main); outline: none;">
+                <option value="https://virginiaroom.biz.id">https://virginiaroom.biz.id</option>
+                <option value="https://www.roomdating.my.id">https://www.roomdating.my.id</option>
+                <option value="https://www.uslukusluk.eu.org">https://www.uslukusluk.eu.org</option>
+                <option value="https://www.uplakupluk.eu.org">https://www.uplakupluk.eu.org</option>
+              </select>
+            </div>
 
-          <button type="submit" class="btn-generate" id="btnSubmit">GENERATE ALL LINKS</button>
+            <div class="form-group">
+              <label>Meta Details (Opsional, berlaku untuk semua)</label>
+              <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
+              <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
+            </div>
 
-        </form>
-      </div>
+            <button type="submit" class="btn-generate" id="btnSubmit">GENERATE ALL LINKS</button>
 
-      <div class="result-card" id="resultCard">
-        <div class="result-header">
-          <span>Hasil Short Links Kamu</span>
-          <button class="btn-copy-all" onclick="copyAllLinks()">SALIN SEMUA</button>
+          </form>
         </div>
-        <div class="result-list" id="outputList">
-          <!-- List hasil short link akan muncul di sini -->
+
+        <!-- Kolom Kanan: Hasil Short Link -->
+        <div class="result-card" id="resultCard">
+          <div class="result-header">
+            <span>Hasil Short Links Kamu</span>
+            <button class="btn-copy-all" onclick="copyAllLinks()">SALIN SEMUA</button>
+          </div>
+          <div class="result-list" id="outputList">
+            <!-- List hasil short link akan muncul di sini -->
+          </div>
         </div>
       </div>
 
@@ -365,18 +386,16 @@
   </div>
 
   <script>
-    // --- USERNAME & PASSWORD ---
     const ADMIN_USER = "ROOMUSER"; 
     const ADMIN_PASS = "ROOMUSER"; 
 
-    // Cek status login & autofill saat halaman dibuka
     window.onload = function() {
       if (localStorage.getItem("isLoggedIn") === "true") {
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
+        document.getElementById('mainWrapper').classList.add('app-active');
       }
 
-      // Ambil data sandi tersimpan jika ada
       const savedUser = localStorage.getItem("savedUser");
       const savedPass = localStorage.getItem("savedPass");
       if (savedUser && savedPass) {
@@ -386,7 +405,6 @@
       }
     }
 
-    // Proses Login
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const u = document.getElementById('loginUser').value.trim();
@@ -397,7 +415,6 @@
       if (u === ADMIN_USER && p === ADMIN_PASS) {
         localStorage.setItem("isLoggedIn", "true");
 
-        // Jika centang ingat sandi aktif, simpan di localStorage browser
         if (remember) {
           localStorage.setItem("savedUser", u);
           localStorage.setItem("savedPass", p);
@@ -408,25 +425,21 @@
 
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
+        document.getElementById('mainWrapper').classList.add('app-active');
       } else {
         err.style.display = 'block';
       }
     });
 
-    // Proses Logout
     function handleLogout() {
       localStorage.removeItem("isLoggedIn");
-      // Catatan: savedUser dan savedPass dibiarkan agar tidak perlu ketik ulang pas login lagi, 
-      // kecuali Anda ingin menghapusnya juga.
       location.reload();
     }
 
-    // Konfigurasi Supabase
     const SUPABASE_URL_VAL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
     const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
     const sbClient = window.supabase.createClient(SUPABASE_URL_VAL, SUPABASE_KEY_VAL);
 
-    // Daftar Domain untuk Fitur Random / Pick
     const availableDomains = [
       'https://virginiaroom.biz.id',
       'https://www.roomdating.my.id',
