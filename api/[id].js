@@ -1,14 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // Ambil id dari query, atau ambil langsung dari ujung URL jika query kosong
   const { id } = req.query;
-  const pathParts = req.url ? req.url.split('?')[0].split('/') : [];
-  const linkId = id || pathParts[pathParts.length - 1];
 
-  // DEBUG: Tampilkan teks ini di browser jika id gagal ditangkap
-  if (!linkId || linkId === 'api') {
-    return res.status(400).send('ID Link tidak terbaca dari URL.');
+  if (!id) {
+    return res.status(404).send('ID Link tidak ditemukan.');
   }
 
   try {
@@ -17,21 +13,21 @@ export default async function handler(req, res) {
       process.env.SUPABASE_KEY
     );
 
-    // PERHATIKAN: Ganti 'links' di bawah ini jika nama tabel Anda di Supabase berbeda!
+    // Mengambil data dari tabel links berdasarkan id
     const { data, error } = await supabase
-      .from('links') 
+      .from('links')
       .select('*')
-      .eq('id', linkId)
+      .eq('id', id)
       .single();
 
     if (error || !data) {
-      // Kita tambahkan info id apa yang sedang dicari agar ketahuan
-      return res.status(404).send(`Link dengan ID "${linkId}" tidak ditemukan di database.`);
+      return res.status(404).send(`Link dengan ID "${id}" tidak ditemukan di database.`);
     }
 
     const targetUrl = data.url;
     const userAgent = (req.headers['user-agent'] || '').toLowerCase();
     
+    // Deteksi bot sosial media (Facebook, WhatsApp, dll)
     const isBot = /facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|linkedinbot|skypeuripreview|discordbot|slackbot|pinterest|googlebot|bingbot/i.test(userAgent);
 
     if (isBot) {
@@ -55,6 +51,7 @@ export default async function handler(req, res) {
       `);
     }
 
+    // Redirect murni 302 untuk pengguna biasa
     return res.redirect(302, targetUrl);
 
   } catch (err) {
