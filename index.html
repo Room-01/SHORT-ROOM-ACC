@@ -377,6 +377,7 @@
               <div class="form-group">
                 <label>Meta Details (Opsional, berlaku untuk semua)</label>
                 <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
+                <input type="text" id="metaDescription" placeholder="Description (Opsional)" style="margin-bottom: 10px;">
                 <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
               </div>
 
@@ -529,6 +530,7 @@
       const btn = document.getElementById('btnSubmit');
       const rawText = document.getElementById('targetUrl').value.trim();
       const titleVal = document.getElementById('metaTitle').value.trim();
+      const descVal = document.getElementById('metaDescription').value.trim();
       const imageVal = document.getElementById('metaImage').value.trim();
       
       const resultCard = document.getElementById('resultCard');
@@ -562,6 +564,7 @@
           id: randomId,
           url: urls[i],
           title: titleVal,
+          description: descVal,
           image: imageVal
         });
         
