@@ -44,9 +44,9 @@ export default async function handler(req, res) {
     if (!title || typeof title !== 'string' || title.trim() === '') {
       try {
         const parsedUrl = new URL(finalUrl);
-        title = `Kunjungi ${parsedUrl.hostname}`; // Contoh: "Kunjungi www.instagram.com" atau atur teks bebas
+        title = `Kunjungi ${parsedUrl.hostname}`; 
       } catch (e) {
-        title = "Klik Link Ini"; // Judul cadangan jika format URL tidak biasa
+        title = "Klik Link Ini"; 
       }
     }
 
@@ -62,7 +62,8 @@ export default async function handler(req, res) {
         url: finalUrl.trim(), 
         title: title.trim(), 
         image: image ? image.trim() : null 
-      }]);
+      }])
+      .select(); // <--- TAMBAHAN INI AGAR DATA TIDAK NULL DI RESPONSE
 
     if (error) {
       console.error('Supabase Error:', error);
