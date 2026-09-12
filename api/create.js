@@ -6,22 +6,42 @@ export default async function handler(req, res) {
   }
 
   try {
-    let body = req.body;
-    
-    // Jika frontend mengirim data sebagai array (batch), ambil item pertama
-    if (Array.isArray(body) && body.length > 0) {
-      body = body[0];
+    let payload = req.body;
+
+    // Jika data dikirim dalam bentuk array (batch), ambil item pertama
+    if (Array.isArray(payload) && payload.length > 0) {
+      payload = payload[0];
     }
 
-    let { id, url, link, destination, originalUrl, targetUrl, title, image } = body || {};
-    
-    let finalUrl = url || link || destination || originalUrl || targetUrl;
+    // Ambil nilai dari properti apa saja yang mungkin dikirim frontend
+    let id = payload?.id;
+    let title = payload?.title;
+    let image = payload?.image;
 
-    if (!finalUrl) {
+    // Cari teks URL dari properti mana pun yang tersedia di body
+    let finalUrl = payload?.url || payload?.link || payload?.destination || payload?.originalUrl || payload?.targetUrl;
+
+    // Jika masih tidak ketemu, ambil nilai dari key pertama yang bukan id/title/image
+    if (!finalUrl && payload && typeof payload === 'object') {
+      for (const key of Object.keys(payload)) {
+        if (!['id', 'title', 'image'].includes(key) && payload[key]) {
+          finalUrl = payload[key];
+          break;
+        }
+      }
+    }
+
+    // Darurat: Jika payload berupa string mentah
+    if (!finalUrl && typeof payload === 'string') {
+      finalUrl = payload;
+    }
+
+    if (!finalUrl || typeof finalUrl !== 'string' || finalUrl.trim() === '') {
       return res.status(400).json({ error: 'URL tujuan tidak boleh kosong' });
     }
 
-    if (!id || id.trim() === '') {
+    // Auto-generate ID acak jika kosong
+    if (!id || typeof id !== 'string' || id.trim() === '') {
       id = Math.random().toString(36).substring(2, 8);
     }
 
@@ -33,10 +53,10 @@ export default async function handler(req, res) {
     const { data, error } = await supabase
       .from('links')
       .insert([{ 
-        id, 
-        url: finalUrl, 
-        title: title || null, 
-        image: image || null 
+        id: id.trim(), 
+        url: finalUrl.trim(), 
+        title: title ? title.trim() : null, 
+        image: image ? image.trim() : null 
       }]);
 
     if (error) {
