@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/go",
-      "destination": "/api/go"
+      "source": "/((?!api|_next|static).* )",
+      "destination": "/index.html"
     }
   ]
 }
