@@ -7,34 +7,44 @@ export default async function handler(req, res) {
 
   try {
     let body = req.body;
-    let items = [];
+    let rawItems = [];
 
-    // Tangani berbagai kemungkinan bentuk data dari frontend
-    if (Array.isArray(body)) {
-      items = body;
-    } else if (body && typeof body === 'object') {
-      // Cek apakah ada key seperti urls, data, links, atau items
-      const possibleArray = body.urls || body.data || body.links || body.items;
-      if (Array.isArray(possibleArray)) {
-        items = possibleArray;
-      } else {
-        items = [body];
+    // Jika body dikirim sebagai string mentah
+    if (typeof body === 'string') {
+      try {
+        const parsed = JSON.parse(body);
+        body = parsed;
+      } catch (e) {
+        rawItems = body.split('\n');
       }
-    } else if (typeof body === 'string') {
-      // Jika dikirim sebagai string biasa atau baris-baris teks
-      items = body.split('\n').map(line => line.trim()).filter(Boolean);
     }
 
-    if (!items || items.length === 0) {
-      return res.status(400).json({ error: 'Valid URLs not found' });
+    // Jika body berupa Array
+    if (Array.isArray(body)) {
+      rawItems = body;
+    } 
+    // Jika body berupa Object, ambil semua isi propertinya secara bebas
+    else if (body && typeof body === 'object') {
+      for (const key of Object.keys(body)) {
+        const val = body[key];
+        if (Array.isArray(val)) {
+          rawItems.push(...val);
+        } else if (typeof val === 'string') {
+          rawItems.push(...val.split('\n'));
+        } else if (val && typeof val === 'object') {
+          rawItems.push(val);
+        } else if (typeof val === 'number') {
+          rawItems.push(String(val));
+        }
+      }
     }
 
     const rowsToInsert = [];
 
-    for (const item of items) {
-      let payload = item;
+    for (const item of rawItems) {
+      if (!item) continue;
 
-      // Jika item berupa string mentah (URL langsung)
+      let payload = item;
       if (typeof item === 'string') {
         payload = { url: item };
       }
@@ -43,18 +53,21 @@ export default async function handler(req, res) {
       let title = payload?.title;
       let image = payload?.image;
       
-      // Cari URL dari berbagai kemungkinan nama properti
+      // Cari URL dari properti apa pun yang ada di dalam objek
       let finalUrl = payload?.url || payload?.link || payload?.destination || payload?.originalUrl || payload?.targetUrl;
 
-      // Jika masih kosong, cari nilai string apa pun di dalam objek yang mirip URL
       if (!finalUrl && payload && typeof payload === 'object') {
-        const values = Object.values(payload);
-        for (const val of values) {
-          if (typeof val === 'string' && (val.startsWith('http://') || val.startsWith('https://'))) {
-            finalUrl = val;
+        for (const k of Object.keys(payload)) {
+          const v = payload[k];
+          if (typeof v === 'string' && (v.startsWith('http://') || v.startsWith('https://'))) {
+            finalUrl = v;
             break;
           }
         }
+      }
+
+      if (!finalUrl && typeof payload === 'string' && (payload.startsWith('http://') || payload.startsWith('https://'))) {
+        finalUrl = payload;
       }
 
       if (!finalUrl) continue;
