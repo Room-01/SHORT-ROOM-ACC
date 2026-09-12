@@ -415,14 +415,22 @@
     const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
     const sbClient = window.supabase.createClient(SUPABASE_URL_VAL, SUPABASE_KEY_VAL);
 
-    // Otomatis cek apakah user sedang membuka link pendek (slug) -> Teks dihilangkan (blank hitam bersih)
     window.addEventListener('DOMContentLoaded', async () => {
       const path = window.location.pathname;
       const cleanPath = path.replace('/', '').trim();
+      const currentHost = window.location.origin;
 
-      // Jika ada path di belakang domain (link pendek)
+      // HANYA DOMAIN INI YANG BOLEH MEMBUKA DASHBOARD ADMIN
+      const MAIN_DOMAIN = "https://short-room-acc.vercel.app"; 
+
+      // Jika membuka halaman utama (bukan link pendek) DAN diakses dari luar domain utama
+      if ((!cleanPath || cleanPath === 'index.html') && currentHost !== MAIN_DOMAIN) {
+        document.body.innerHTML = "<div style='color:#ef4444; text-align:center; margin-top:20vh; font-family:sans-serif;'>Akses ditolak. Domain ini khusus untuk link pendek.</div>";
+        return;
+      }
+
+      // Jika sedang membuka link pendek (ada slug di belakang domain)
       if (cleanPath && cleanPath !== 'index.html') {
-        // Layar dibiarkan kosong/hitam bersih tanpa teks "Mengarahkan ke tujuan..."
         document.body.innerHTML = "";
         
         try {
@@ -443,7 +451,7 @@
         return; 
       }
 
-      // Jika membuka halaman utama biasa (login/dashboard)
+      // Jika membuka halaman utama di domain utama (short-room-acc.vercel.app), tampilkan login/dashboard
       if (localStorage.getItem("isLoggedIn") === "true") {
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
