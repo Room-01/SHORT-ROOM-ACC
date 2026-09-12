@@ -6,30 +6,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Cetak isi req.body ke log Vercel untuk kita periksa
-    console.log("REQUEST BODY DARI FRONTEND:", JSON.stringify(req.body));
-
-    let { id, url, link, destination, originalUrl, targetUrl, title, image } = req.body;
+    let body = req.body;
     
-    // Cek semua kemungkinan nama variabel URL
-    let finalUrl = url || link || destination || originalUrl || targetUrl;
-
-    // Jika masih kosong, coba ambil dari properti pertama yang ada di body
-    if (!finalUrl && req.body) {
-      const keys = Object.keys(req.body);
-      if (keys.length > 0) {
-        // Ambil nilai dari key pertama yang bukan id, title, atau image
-        for (let k of keys) {
-          if (!['id', 'title', 'image'].includes(k) && req.body[k]) {
-            finalUrl = req.body[k];
-            break;
-          }
-        }
-      }
+    // Jika frontend mengirim data sebagai array (batch), ambil item pertama
+    if (Array.isArray(body) && body.length > 0) {
+      body = body[0];
     }
 
+    let { id, url, link, destination, originalUrl, targetUrl, title, image } = body || {};
+    
+    let finalUrl = url || link || destination || originalUrl || targetUrl;
+
     if (!finalUrl) {
-      return res.status(400).json({ error: 'URL tujuan tidak boleh kosong (null). Data diterima: ' + JSON.stringify(req.body) });
+      return res.status(400).json({ error: 'URL tujuan tidak boleh kosong' });
     }
 
     if (!id || id.trim() === '') {
@@ -43,7 +32,12 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase
       .from('links')
-      .insert([{ id, url: finalUrl, title, image }]);
+      .insert([{ 
+        id, 
+        url: finalUrl, 
+        title: title || null, 
+        image: image || null 
+      }]);
 
     if (error) {
       console.error('Supabase Error:', error);
