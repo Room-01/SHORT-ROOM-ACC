@@ -31,7 +31,9 @@ export default async function handler(req, res) {
 
     const targetUrl = data.url;
     const title = data.title || "Kunjungi Tautan";
-    const image = data.image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"; // Default fallback image agar tidak kosong
+    // Ambil deskripsi dari database, berikan fallback jika kosong
+    const description = data.description || "Klik untuk mengunjungi tautan tujuan."; 
+    const image = data.image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe";
 
     const userAgent = (req.headers['user-agent'] || '').toLowerCase();
     const isBot = /bot|crawl|slifer|whatsapp|telegram|facebookexternalhit|twitterbot|linkedinbot|pinterest|slackbot|discordbot/i.test(userAgent);
@@ -47,11 +49,12 @@ export default async function handler(req, res) {
             <meta property="og:site_name" content="Shortener" />
             <meta property="og:type" content="website" />
             <meta property="og:title" content="${title}" />
-            <meta property="og:description" content="Klik untuk mengunjungi tautan tujuan." />
+            <meta property="og:description" content="${description}" />
             <meta property="og:url" content="https://${req.headers.host}/${id}" />
             <meta property="og:image" content="${image}" />
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:title" content="${title}" />
+            <meta name="twitter:description" content="${description}" />
             <meta name="twitter:image" content="${image}" />
           </head>
           <body>
