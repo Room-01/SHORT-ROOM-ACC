@@ -1,39 +1,626 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Short Link</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #0b0f19; /* Menyesuaikan warna latar belakang gelap */
-            height: 100vh;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROOM | Link Shortener</title>
+  
+  <!-- Favicon (Ikon Tab Browser) -->
+  <link rel="icon" type="image/jpeg" href="https://i.imgur.com/8k3Ddag.jpeg">
+
+  <!-- Library Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent-color: #10b981;
+      --accent-hover: #059669;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 40px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 650px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .wrapper.app-active {
+      max-width: 1000px;
+    }
+
+    .brand {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .brand span {
+      color: var(--accent-color);
+    }
+
+    .logout-btn {
+      color: #ef4444;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      transition: all 0.2s;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    textarea, input[type="text"], input[type="password"] {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus, input[type="text"]:focus, input[type="password"]:focus {
+      border-color: var(--accent-color);
+    }
+
+    textarea {
+      height: 120px;
+      resize: vertical;
+    }
+
+    .remember-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .remember-group input[type="checkbox"] {
+      accent-color: var(--accent-color);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .mode-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #0f172a;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .mode-option {
+      text-align: center;
+      padding: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .mode-option.active {
+      background: var(--accent-color);
+      color: #000;
+    }
+
+    .btn-generate, .btn-login {
+      width: 100%;
+      background: var(--accent-color);
+      color: #000000;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-generate:hover, .btn-login:hover {
+      background: var(--accent-hover);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: start; 
+      }
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .top-bar-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 5px;
+    }
+
+    .right-column-spacer {
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      .right-column-spacer {
+        display: block;
+        height: 31px;
+      }
+    }
+
+    .result-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      display: none;
+      height: fit-content;
+    }
+
+    .result-card.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .result-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .result-item {
+      background: #0f172a;
+      border: 1px dashed var(--accent-color);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-url {
+      color: var(--accent-color);
+      font-weight: 700;
+      font-size: 0.8rem;
+      word-break: break-all;
+    }
+
+    .btn-copy {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .btn-copy:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-copy-all {
+      background: var(--accent-color);
+      color: #000;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .error-msg {
+      color: #ef4444;
+      font-size: 0.8rem;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <script>
-        async function handleRedirect() {
-            const path = window.location.pathname.substring(1); // Mengambil kode unik setelah domain
-            if (!path) return;
 
-            try {
-                // Mengambil data dari API Vercel Anda
-                const response = await这样做(`/api/get?code=${path}`); // Sesuaikan dengan endpoint API get Anda
-                const data = await response.json();
+  <div class="wrapper" id="mainWrapper">
+    
+    <!-- HALAMAN LOGIN -->
+    <div class="card" id="loginCard">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="font-size: 1.2rem; font-weight: 800;">ROOM <span>//</span> Login</h2>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Masukkan Username & Password</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="loginUser" placeholder="Masukkan username" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPass" placeholder="Masukkan password" required>
+        </div>
+        
+        <div class="remember-group">
+          <input type="checkbox" id="rememberMe">
+          <label for="rememberMe" style="display:inline; color:var(--text-muted); text-transform:none; cursor:pointer;">Ingat sandi saya (Tetap masuk)</label>
+        </div>
 
-                if (data && data.url) {
-                    window.location.replace(data.url);
-                }
-            } catch (error) {
-                // Biarkan kosong atau arahkan ke halaman utama jika gagal
-            }
+        <button type="submit" class="btn-login">MASUK</button>
+        <div class="error-msg" id="loginError">Username atau Password salah!</div>
+      </form>
+    </div>
+
+    <!-- HALAMAN UTAMA (SHORTENER) -->
+    <div id="mainApp" style="display: none; flex-direction: column; gap: 20px;">
+      
+      <div class="dashboard-grid">
+        <!-- Kolom Kiri: Header & Form -->
+        <div class="left-column">
+          <div class="top-bar-inner">
+            <div class="brand">ROOM <span>//</span> Link Shortener</div>
+            <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
+          </div>
+
+          <div class="card">
+            <form id="shortenerForm">
+              
+              <div class="form-group">
+                <label>Destination URLs (Satu URL per baris)</label>
+                <textarea id="targetUrl" placeholder="https://domain1.com/promo&#10;https://domain2.com/produk&#10;https://domain3.com/artikel" required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>Domain Mode</label>
+                <div class="mode-selector">
+                  <div class="mode-option active" id="modeAuto" onclick="setMode('AUTO')">AUTO</div>
+                  <div class="mode-option" id="modePick" onclick="setMode('DOMAIN')">DOMAIN</div>
+                </div>
+              </div>
+
+              <div class="form-group" id="domainPickerGroup" style="display: none;">
+                <label>Pilih Domain Spesifik</label>
+                <select id="selectedDomain" style="width: 100%; background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; color: var(--text-main); outline: none;">
+                  <option value="https://virginiaroom.biz.id">https://virginiaroom.biz.id</option>
+                  <option value="https://roomdating.my.id">https://roomdating.my.id</option>
+                  <option value="https://uslukusluk.eu.org">https://uslukusluk.eu.org</option>
+                  <option value="https://uplakupluk.eu.org">https://uplakupluk.eu.org</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Meta Details (Opsional, berlaku untuk semua)</label>
+                <input type="text" id="metaTitle" placeholder="Title (Opsional)" style="margin-bottom: 10px;">
+                <input type="text" id="metaImage" placeholder="Image URL (Opsional)">
+              </div>
+
+              <button type="submit" class="btn-generate" id="btnSubmit">GENERATE ALL LINKS</button>
+
+            </form>
+          </div>
+        </div>
+
+        <!-- Kolom Kanan: Hasil Short Link -->
+        <div style="display: flex; flex-direction: column;">
+          <div class="right-column-spacer"></div>
+          <div class="result-card" id="resultCard">
+            <div class="result-header">
+              <span>Hasil Short Links Kamu</span>
+              <button class="btn-copy-all" onclick="copyAllLinks()">SALIN SEMUA</button>
+            </div>
+            <div class="result-list" id="outputList">
+              <!-- List hasil short link -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const ADMIN_USER = "ROOMUSER"; 
+    const ADMIN_PASS = "ROOMUSER"; 
+
+    const SUPABASE_URL_VAL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
+    const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
+    const sbClient = window.supabase.createClient(SUPABASE_URL_VAL, SUPABASE_KEY_VAL);
+
+    // Otomatis cek apakah user sedang membuka link pendek (slug) -> Teks dihilangkan (blank hitam bersih)
+    window.addEventListener('DOMContentLoaded', async () => {
+      const path = window.location.pathname;
+      const cleanPath = path.replace('/', '').trim();
+
+      // Jika ada path di belakang domain (link pendek)
+      if (cleanPath && cleanPath !== 'index.html') {
+        // Layar dibiarkan kosong/hitam bersih tanpa teks "Mengarahkan ke tujuan..."
+        document.body.innerHTML = "";
+        
+        try {
+          const { data, error } = await sbClient
+            .from('links')
+            .select('url')
+            .eq('id', cleanPath)
+            .single();
+
+          if (data && data.url) {
+            window.location.replace(data.url);
+          } else {
+            document.body.innerHTML = "<div style='color:#ef4444; text-align:center; margin-top:20vh; font-family:sans-serif;'>Link tidak ditemukan atau sudah kadaluarsa.</div>";
+          }
+        } catch (err) {
+          document.body.innerHTML = "<div style='color:#ef4444; text-align:center; margin-top:20vh; font-family:sans-serif;'>Terjadi kesalahan saat memuat link.</div>";
+        }
+        return; 
+      }
+
+      // Jika membuka halaman utama biasa (login/dashboard)
+      if (localStorage.getItem("isLoggedIn") === "true") {
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+        document.getElementById('mainWrapper').classList.add('app-active');
+      }
+
+      const savedUser = localStorage.getItem("savedUser");
+      const savedPass = localStorage.getItem("savedPass");
+      if (savedUser && savedPass) {
+        document.getElementById('loginUser').value = savedUser;
+        document.getElementById('loginPass').value = savedPass;
+        document.getElementById('rememberMe').checked = true;
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUser').value.trim();
+      const p = document.getElementById('loginPass').value.trim();
+      const remember = document.getElementById('rememberMe').checked;
+      const err = document.getElementById('loginError');
+
+      if (u === ADMIN_USER && p === ADMIN_PASS) {
+        localStorage.setItem("isLoggedIn", "true");
+
+        if (remember) {
+          localStorage.setItem("savedUser", u);
+          localStorage.setItem("savedPass", p);
+        } else {
+          localStorage.removeItem("savedUser");
+          localStorage.removeItem("savedPass");
         }
 
-        // Jalankan fungsi saat halaman dimuat
-        window.onload = handleRedirect;
-    </script>
+        document.getElementById('loginCard').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+        document.getElementById('mainWrapper').classList.add('app-active');
+      } else {
+        err.style.display = 'block';
+      }
+    });
+
+    function handleLogout() {
+      localStorage.removeItem("isLoggedIn");
+      location.reload();
+    }
+
+    const availableDomains = [
+      'https://virginiaroom.biz.id',
+      'https://roomdating.my.id',
+      'https://uslukusluk.eu.org',
+      'https://uplakupluk.eu.org'
+    ];
+
+    let currentMode = 'AUTO';
+
+    function setMode(mode) {
+      currentMode = mode;
+      const autoEl = document.getElementById('modeAuto');
+      const pickEl = document.getElementById('modePick');
+      const pickerGroup = document.getElementById('domainPickerGroup');
+
+      if (mode === 'AUTO') {
+        autoEl.classList.add('active');
+        pickEl.classList.remove('active');
+        pickerGroup.style.display = 'none';
+      } else {
+        pickEl.classList.add('active');
+        autoEl.classList.remove('active');
+        pickerGroup.style.display = 'block';
+      }
+    }
+
+    function getRandomDomain() {
+      const randomIndex = Math.floor(Math.random() * availableDomains.length);
+      return availableDomains[randomIndex];
+    }
+
+    let generatedLinksArray = [];
+
+    document.getElementById('shortenerForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const btn = document.getElementById('btnSubmit');
+      const rawText = document.getElementById('targetUrl').value.trim();
+      const titleVal = document.getElementById('metaTitle').value.trim();
+      const imageVal = document.getElementById('metaImage').value.trim();
+      
+      const resultCard = document.getElementById('resultCard');
+      const outputList = document.getElementById('outputList');
+
+      if (!rawText) return;
+
+      const urls = rawText.split('\n')
+                          .map(u => u.trim())
+                          .filter(u => u.length > 0);
+
+      if (urls.length === 0) return;
+
+      btn.innerText = "SAVING BATCH...";
+      btn.disabled = true;
+
+      const rowsToInsert = [];
+      const tempResults = [];
+
+      for (let i = 0; i < urls.length; i++) {
+        const randomId = Math.random().toString(36).substring(2, 7);
+        
+        let chosenDomain;
+        if (currentMode === 'AUTO') {
+          chosenDomain = getRandomDomain();
+        } else {
+          chosenDomain = document.getElementById('selectedDomain').value;
+        }
+
+        rowsToInsert.push({
+          id: randomId,
+          url: urls[i],
+          title: titleVal,
+          image: imageVal
+        });
+        
+        tempResults.push(`${chosenDomain}/${randomId}`);
+      }
+
+      const { error } = await sbClient.from('links').insert(rowsToInsert);
+
+      btn.innerText = "GENERATE ALL LINKS";
+      btn.disabled = false;
+
+      if (error) {
+        alert('Gagal menyimpan link: ' + error.message);
+        return;
+      }
+
+      generatedLinksArray = tempResults;
+      outputList.innerHTML = '';
+
+      tempResults.forEach((link) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'result-item';
+        itemDiv.innerHTML = `
+          <span class="result-url">${link}</span>
+          <button class="btn-copy" onclick="copySingle(this, '${link}')">SALIN</button>
+        `;
+        outputList.appendChild(itemDiv);
+      });
+
+      resultCard.classList.add('active');
+    });
+
+    function copySingle(element, text) {
+      navigator.clipboard.writeText(text);
+      const originalText = element.innerText;
+      element.innerText = "DISALIN!";
+      element.style.background = "#10b981";
+      element.style.color = "#000";
+      
+      setTimeout(() => {
+        element.innerText = originalText;
+        element.style.background = "#ffffff";
+        element.style.color = "#000000";
+      }, 1500);
+    }
+
+    function copyAllLinks() {
+      const allText = generatedLinksArray.join('\n');
+      navigator.clipboard.writeText(allText);
+      
+      const btnAll = document.querySelector('.btn-copy-all');
+      const originalText = btnAll.innerText;
+      btnAll.innerText = "SEMUA DISALIN!";
+      
+      setTimeout(() => {
+        btnAll.innerText = originalText;
+      }, 1500);
+    }
+  </script>
+
 </body>
 </html>
