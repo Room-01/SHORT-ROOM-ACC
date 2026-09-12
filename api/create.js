@@ -6,48 +6,64 @@ export default async function handler(req, res) {
   }
 
   try {
-    let payload = req.body;
+    let body = req.body;
+    let items = [];
 
-    if (Array.isArray(payload) && payload.length > 0) {
-      payload = payload[0];
+    // Tangani jika data dikirim sebagai Array (banyak link) atau Object tunggal
+    if (Array.isArray(body)) {
+      items = body;
+    } else if (body && typeof body === 'object') {
+      if (Array.isArray(body.urls)) {
+        items = body.urls;
+      } else {
+        items = [body];
+      }
     }
 
-    // Ambil data dari payload dengan berbagai kemungkinan nama key
-    let id = payload?.id || payload?.slug;
-    let title = payload?.title;
-    let image = payload?.image;
-    let finalUrl = payload?.url || payload?.link || payload?.destination || payload?.originalUrl || payload?.targetUrl;
+    if (items.length === 0) {
+      return res.status(400).json({ error: 'No URLs provided' });
+    }
 
-    if (!finalUrl && payload && typeof payload === 'object') {
-      const values = Object.values(payload);
-      for (const val of values) {
-        if (typeof val === 'string' && val.trim().length > 0 && val !== id && val !== title) {
-          finalUrl = val;
-          break;
+    const rowsToInsert = [];
+
+    for (const item of items) {
+      let payload = typeof item === 'string' ? { url: item } : item;
+
+      let id = payload?.id || payload?.slug;
+      let title = payload?.title;
+      let image = payload?.image;
+      let finalUrl = payload?.url || payload?.link || payload?.destination || payload?.originalUrl || payload?.targetUrl;
+
+      if (!finalUrl && typeof payload === 'string') {
+        finalUrl = payload;
+      }
+
+      if (!finalUrl) continue;
+
+      // Buat ID random jika kosong
+      if (!id || typeof id !== 'string' || id.trim() === '') {
+        id = Math.random().toString(36).substring(2, 8);
+      }
+
+      if (!title || typeof title !== 'string' || title.trim() === '') {
+        try {
+          const parsedUrl = new URL(finalUrl);
+          title = `Kunjungi ${parsedUrl.hostname}`; 
+        } catch (e) {
+          title = "Klik Link Ini"; 
         }
       }
+
+      rowsToInsert.push({
+        id: id.trim(),
+        url: finalUrl.trim(),
+        title: title.trim(),
+        image: image ? image.trim() : null
+      });
     }
 
-    if (!finalUrl && typeof payload === 'string') {
-      finalUrl = payload;
-    }
-
-    if (!finalUrl) {
-      finalUrl = "https://instagram.com";
-    }
-
-    // Buat ID random jika kosong
-    if (!id || typeof id !== 'string' || id.trim() === '') {
-      id = Math.random().toString(36).substring(2, 8);
-    }
-
-    if (!title || typeof title !== 'string' || title.trim() === '') {
-      try {
-        const parsedUrl = new URL(finalUrl);
-        title = `Kunjungi ${parsedUrl.hostname}`; 
-      } catch (e) {
-        title = "Klik Link Ini"; 
-      }
+    if (rowsToInsert.length === 0) {
+      return res.status(400).json({ error: 'Valid URLs not found' });
     }
 
     const supabase = createClient(
@@ -55,15 +71,10 @@ export default async function handler(req, res) {
       process.env.SUPABASE_KEY
     );
 
-    // EKSEKUSI INSERT KE SUPABASE
+    // EKSEKUSI BULK INSERT KE SUPABASE
     const { data, error } = await supabase
       .from('links')
-      .insert([{ 
-        id: id.trim(), 
-        url: finalUrl.trim(), 
-        title: title.trim(), 
-        image: image ? image.trim() : null 
-      }])
+      .insert(rowsToInsert)
       .select();
 
     if (error) {
@@ -71,7 +82,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: error.message });
     }
 
-    return res.status(200).json({ success: true, id, data });
+    return res.status(200).json({ success: true, data });
   } catch (err) {
     console.error('Server Catch Error:', err);
     return res.status(500).json({ error: err.message });
