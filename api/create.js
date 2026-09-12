@@ -6,14 +6,30 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Menangkap berbagai kemungkinan nama properti dari frontend
-    let { id, url, link, destination, title, image } = req.body;
+    // Cetak isi req.body ke log Vercel untuk kita periksa
+    console.log("REQUEST BODY DARI FRONTEND:", JSON.stringify(req.body));
+
+    let { id, url, link, destination, originalUrl, targetUrl, title, image } = req.body;
     
-    // Jika url kosong, ambil dari properti alternatif (link atau destination)
-    const finalUrl = url || link || destination;
+    // Cek semua kemungkinan nama variabel URL
+    let finalUrl = url || link || destination || originalUrl || targetUrl;
+
+    // Jika masih kosong, coba ambil dari properti pertama yang ada di body
+    if (!finalUrl && req.body) {
+      const keys = Object.keys(req.body);
+      if (keys.length > 0) {
+        // Ambil nilai dari key pertama yang bukan id, title, atau image
+        for (let k of keys) {
+          if (!['id', 'title', 'image'].includes(k) && req.body[k]) {
+            finalUrl = req.body[k];
+            break;
+          }
+        }
+      }
+    }
 
     if (!finalUrl) {
-      return res.status(400).json({ error: 'URL tujuan tidak boleh kosong (null)' });
+      return res.status(400).json({ error: 'URL tujuan tidak boleh kosong (null). Data diterima: ' + JSON.stringify(req.body) });
     }
 
     if (!id || id.trim() === '') {
