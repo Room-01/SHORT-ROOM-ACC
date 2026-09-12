@@ -6,9 +6,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    let { id, url, title, image } = req.body;
+    // Menangkap berbagai kemungkinan nama properti dari frontend
+    let { id, url, link, destination, title, image } = req.body;
+    
+    // Jika url kosong, ambil dari properti alternatif (link atau destination)
+    const finalUrl = url || link || destination;
 
-    // Perbaikan sintaks string acak yang aman
+    if (!finalUrl) {
+      return res.status(400).json({ error: 'URL tujuan tidak boleh kosong (null)' });
+    }
+
     if (!id || id.trim() === '') {
       id = Math.random().toString(36).substring(2, 8);
     }
@@ -20,7 +27,7 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase
       .from('links')
-      .insert([{ id, url, title, image }]);
+      .insert([{ id, url: finalUrl, title, image }]);
 
     if (error) {
       console.error('Supabase Error:', error);
