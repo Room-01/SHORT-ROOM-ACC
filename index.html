@@ -32,7 +32,6 @@
       background-color: var(--bg-color);
       color: var(--text-main);
       padding: 40px;
-      /* Diubah dari center ke flex-start agar berada di pojok kiri atas */
       display: flex;
       justify-content: flex-start;
       align-items: flex-start;
@@ -344,7 +343,7 @@
     <div id="mainApp" style="display: none; flex-direction: column; gap: 20px;">
       
       <div class="dashboard-grid">
-        <!-- Kolom Kiri: Memuat Header (Logo & Logout) dan Form Shortener -->
+        <!-- Kolom Kiri: Header & Form -->
         <div class="left-column">
           <div class="top-bar-inner">
             <div class="brand">ROOM <span>//</span> Link Shortener</div>
@@ -389,7 +388,7 @@
           </div>
         </div>
 
-        <!-- Kolom Kanan: Spacer agar sejajar dengan header kiri, lalu Hasil Short Link -->
+        <!-- Kolom Kanan: Hasil Short Link -->
         <div style="display: flex; flex-direction: column;">
           <div class="right-column-spacer"></div>
           <div class="result-card" id="resultCard">
@@ -398,7 +397,7 @@
               <button class="btn-copy-all" onclick="copyAllLinks()">SALIN SEMUA</button>
             </div>
             <div class="result-list" id="outputList">
-              <!-- List hasil short link akan muncul di sini -->
+              <!-- List hasil short link -->
             </div>
           </div>
         </div>
@@ -412,7 +411,38 @@
     const ADMIN_USER = "ROOMUSER"; 
     const ADMIN_PASS = "ROOMUSER"; 
 
-    window.onload = function() {
+    const SUPABASE_URL_VAL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
+    const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
+    const sbClient = window.supabase.createClient(SUPABASE_URL_VAL, SUPABASE_KEY_VAL);
+
+    // Otomatis cek apakah user sedang membuka link pendek (slug)
+    window.addEventListener('DOMContentLoaded', async () => {
+      const path = window.location.pathname;
+      const cleanPath = path.replace('/', '').trim();
+
+      // Jika ada path di belakang domain (selain kosong atau index.html), berarti ini link redirect
+      if (cleanPath && cleanPath !== 'index.html') {
+        document.body.innerHTML = "<div style='color:white; text-align:center; margin-top:20vh; font-family:sans-serif;'>Mengarahkan ke tujuan...</div>";
+        
+        try {
+          const { data, error } = await sbClient
+            .from('links')
+            .select('url')
+            .eq('id', cleanPath)
+            .single();
+
+          if (data && data.url) {
+            window.location.href = data.url;
+          } else {
+            document.body.innerHTML = "<div style='color:#ef4444; text-align:center; margin-top:20vh; font-family:sans-serif;'>Link tidak ditemukan atau sudah kadaluarsa.</div>";
+          }
+        } catch (err) {
+          document.body.innerHTML = "<div style='color:#ef4444; text-align:center; margin-top:20vh; font-family:sans-serif;'>Terjadi kesalahan saat memuat link.</div>";
+        }
+        return; // Hentikan eksekusi script login/dashboard
+      }
+
+      // Jika membuka halaman utama biasa (bukan link pendek)
       if (localStorage.getItem("isLoggedIn") === "true") {
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
@@ -426,7 +456,7 @@
         document.getElementById('loginPass').value = savedPass;
         document.getElementById('rememberMe').checked = true;
       }
-    }
+    });
 
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -458,10 +488,6 @@
       localStorage.removeItem("isLoggedIn");
       location.reload();
     }
-
-    const SUPABASE_URL_VAL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
-    const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
-    const sbClient = window.supabase.createClient(SUPABASE_URL_VAL, SUPABASE_KEY_VAL);
 
     const availableDomains = [
       'https://virginiaroom.biz.id',
@@ -537,7 +563,9 @@
           title: titleVal,
           image: imageVal
         });
-        tempResults.push(`${chosenDomain}/go?id=${randomId}`);
+        
+        // Hasil link sekarang bersih tanpa /go?id=
+        tempResults.push(`${chosenDomain}/${randomId}`);
       }
 
       const { error } = await sbClient.from('links').insert(rowsToInsert);
