@@ -12,10 +12,10 @@ export default async function handler(req, res) {
       payload = payload[0];
     }
 
-    let id = payload?.id;
+    // Ambil data dari payload dengan berbagai kemungkinan nama key
+    let id = payload?.id || payload?.slug;
     let title = payload?.title;
     let image = payload?.image;
-    
     let finalUrl = payload?.url || payload?.link || payload?.destination || payload?.originalUrl || payload?.targetUrl;
 
     if (!finalUrl && payload && typeof payload === 'object') {
@@ -36,6 +36,7 @@ export default async function handler(req, res) {
       finalUrl = "https://instagram.com";
     }
 
+    // Buat ID random jika kosong
     if (!id || typeof id !== 'string' || id.trim() === '') {
       id = Math.random().toString(36).substring(2, 8);
     }
@@ -54,6 +55,7 @@ export default async function handler(req, res) {
       process.env.SUPABASE_KEY
     );
 
+    // EKSEKUSI INSERT KE SUPABASE
     const { data, error } = await supabase
       .from('links')
       .insert([{ 
@@ -65,13 +67,13 @@ export default async function handler(req, res) {
       .select();
 
     if (error) {
-      console.error('Supabase Error:', error.message);
+      console.error('Supabase Insert Error:', error);
       return res.status(500).json({ error: error.message });
     }
 
     return res.status(200).json({ success: true, id, data });
   } catch (err) {
-    console.error('Server Error:', err.message);
+    console.error('Server Catch Error:', err);
     return res.status(500).json({ error: err.message });
   }
 }
