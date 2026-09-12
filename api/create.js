@@ -6,7 +6,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { id, url, title, image } = req.body;
+    let { id, url, title, image } = req.body;
+
+    // Jika id tidak diisi dari frontend, buat string acak otomatis (6 karakter)
+    if (!id || id.trim() === '') {
+      id = Math.random().toString(36.substring(2, 8));
+    }
 
     const supabase = createClient(
       process.env.SUPABASE_URL,
@@ -22,7 +27,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: error.message });
     }
 
-    return res.status(200).json({ success: true, data });
+    return res.status(200).json({ success: true, id, data });
   } catch (err) {
     console.error('Server Error:', err);
     return res.status(500).json({ error: err.message });
