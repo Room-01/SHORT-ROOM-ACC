@@ -51,6 +51,7 @@ export default async function handler(req, res) {
 
       let id = payload?.id || payload?.slug || payload?.customId;
       let title = payload?.title;
+      let description = payload?.description || payload?.desc;
       let image = payload?.image;
       
       // Cari URL dari properti apa pun yang ada di dalam objek
@@ -90,6 +91,7 @@ export default async function handler(req, res) {
         id: id.trim(),
         url: finalUrl.trim(),
         title: title.trim(),
+        description: description ? description.trim() : "Klik untuk mengunjungi tautan tujuan.",
         image: image ? image.trim() : null
       });
     }
