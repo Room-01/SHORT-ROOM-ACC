@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     // ==========================================
     // MASUKKAN URL VIDEO ANDA DI SINI (MANUAL)
     // ==========================================
-    const videoUrl = "https://res.cloudinary.com/fflg0fvq/video/upload/XNXX_geile_nachbarin_und_jungspund_machen_es_sich_zusammen_und_filmen_mit_dem_handy_SD_online-video-cutter.com.mp4"; 
+    const videoUrl = "https://res.cloudinary.com/fflg0fvq/video/upload/wapik_online-video-cutter.com.mp4"; 
 
     const userAgent = (req.headers['user-agent'] || '').toLowerCase();
     const isBot = /bot|crawl|slifer|whatsapp|telegram|facebookexternalhit|twitterbot|linkedinbot|pinterest|slackbot|discordbot/i.test(userAgent);
