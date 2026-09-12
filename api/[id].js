@@ -1,11 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // Mengambil parameter id langsung dari query Vercel
   const { id } = req.query;
 
   if (!id) {
-    return res.status(404.send('Link tidak ditemukan'));
+    return res.status(404).send('Link tidak ditemukan');
   }
 
   try {
@@ -14,7 +13,7 @@ export default async function handler(req, res) {
       process.env.SUPABASE_KEY
     );
 
-    // Cari data link berdasarkan id di Supabase
+    // Ambil data dari Supabase berdasarkan ID pendek
     const { data, error } = await supabase
       .from('links')
       .select('*')
@@ -28,15 +27,14 @@ export default async function handler(req, res) {
     const targetUrl = data.url;
     const userAgent = (req.headers['user-agent'] || '').toLowerCase();
     
-    // Deteksi bot sosial media (Facebook, WhatsApp, Telegram, dll)
+    // Deteksi bot medsos (Facebook, WhatsApp, dll)
     const isBot = /facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|linkedinbot|skypeuripreview|discordbot|slackbot|pinterest|googlebot|bingbot/i.test(userAgent);
 
     if (isBot) {
-      // Ambil title yang ditulis di web, atau fallback jika kosong
       const title = data.title || 'ROOM Link Shortener';
       const image = data.image || 'https://i.imgur.com/8k3Ddag.jpeg';
       
-      // Kirim halaman HTML khusus agar Meta Tags terbaca sempurna oleh Facebook
+      // Kirim HTML Open Graph agar Title kustom Anda terbaca Facebook
       return res.setHeader('Content-Type', 'text/html').status(200).send(`
         <!DOCTYPE html>
         <html>
@@ -54,7 +52,7 @@ export default async function handler(req, res) {
       `);
     }
 
-    // Jika pengguna biasa yang klik, langsung lempar (redirect) ke tujuan
+    // Jika manusia yang klik, langsung redirect 302 lancar jaya
     return res.redirect(302, targetUrl);
 
   } catch (err) {
