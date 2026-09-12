@@ -1,13 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // Ambil path dari URL (misal: /abcde menjadi abcde)
+  // Tangkap ID dari query Vercel atau ekstrak langsung dari URL path
   let id = req.query.id;
   
   if (!id && req.url) {
-    const parts = req.url.split('?')[0].split('/').filter(Boolean);
-    if (parts.length > 0) {
-      id = parts[parts.length - 1];
+    // Mengambil segmen terakhir dari URL path (contoh: /g0k31 -> g0k31)
+    const cleanUrl = req.url.split('?')[0];
+    const segments = cleanUrl.split('/').filter(Boolean);
+    if (segments.length > 0) {
+      id = segments[segments.length - 1];
     }
   }
 
@@ -16,8 +18,8 @@ export default async function handler(req, res) {
     process.env.SUPABASE_KEY
   );
 
-  // Jika tidak ada ID (artinya membuka domain utama langsung)
-  if (!id || id === 'index.html') {
+  // Jika setelah diekstrak ternyata kosong atau membuka index
+  if (!id || id === 'index.html' || id === 'api') {
     const html = `
       <!DOCTYPE html>
       <html lang="id">
@@ -36,7 +38,7 @@ export default async function handler(req, res) {
     return res.setHeader('Content-Type', 'text/html').status(200).send(html);
   }
 
-  // Jika ada ID, cari ke database Supabase
+  // Cari data berdasarkan ID yang didapat ke database Supabase
   const { data, error } = await supabase
     .from('links')
     .select('url, title, image')
@@ -73,6 +75,6 @@ export default async function handler(req, res) {
     return res.setHeader('Content-Type', 'text/html').status(200).send(html);
   }
 
-  // Jika manusia biasa, langsung arahkan ke URL tujuan
+  // Jika pengunjung biasa (bukan bot), langsung redirect ke URL tujuan
   return res.redirect(302, data.url);
 }
