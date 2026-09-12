@@ -30,8 +30,38 @@ export default async function handler(req, res) {
     }
 
     const targetUrl = data.url;
-    
-    // Lakukan redirect ke URL tujuan
+    const title = data.title || "Kunjungi Tautan";
+    const image = data.image || "";
+
+    // Cek User-Agent untuk mendeteksi apakah yang mengakses adalah Bot (Social Media / Debugger)
+    const userAgent = (req.headers['user-agent'] || '').toLowerCase();
+    const isBot = /bot|crawl|slifer|whatsapp|telegram|facebookexternalhit|twitterbot|linkedinbot|pinterest|slackbot|discordbot/i.test(userAgent);
+
+    // Jika diakses oleh Bot atau alat Debugger, tampilkan halaman HTML dengan Meta Tag kustom
+    if (isBot) {
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${title}</title>
+            <meta property="og:title" content="${title}" />
+            <meta property="og:url" content="${targetUrl}" />
+            ${image ? `<meta property="og:image" content="${image}" />` : ''}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="${title}" />
+            ${image ? `<meta name="twitter:image" content="${image}" />` : ''}
+            <meta http-equiv="refresh" content="0;url=${targetUrl}" />
+          </head>
+          <body>
+            <p>Mengarahkan ke <a href="${targetUrl}">${targetUrl}</a>...</p>
+          </body>
+        </html>
+      `;
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.status(200).send(html);
+    }
+
+    // Jika diakses oleh manusia biasa, langsung redirect 302 ke URL tujuan secara instan
     return res.redirect(302, targetUrl);
 
   } catch (err) {
