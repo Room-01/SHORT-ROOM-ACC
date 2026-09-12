@@ -1,10 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
+  // Ambil id dari query, atau ambil langsung dari ujung URL jika query kosong
   const { id } = req.query;
+  const pathParts = req.url ? req.url.split('?')[0].split('/') : [];
+  const linkId = id || pathParts[pathParts.length - 1];
 
-  if (!id) {
-    return res.status(404).send('Link tidak ditemukan');
+  // DEBUG: Tampilkan teks ini di browser jika id gagal ditangkap
+  if (!linkId || linkId === 'api') {
+    return res.status(400).send('ID Link tidak terbaca dari URL.');
   }
 
   try {
@@ -13,28 +17,27 @@ export default async function handler(req, res) {
       process.env.SUPABASE_KEY
     );
 
-    // Ambil data dari Supabase berdasarkan ID pendek
+    // PERHATIKAN: Ganti 'links' di bawah ini jika nama tabel Anda di Supabase berbeda!
     const { data, error } = await supabase
-      .from('links')
+      .from('links') 
       .select('*')
-      .eq('id', id)
+      .eq('id', linkId)
       .single();
 
     if (error || !data) {
-      return res.status(404).send('Link tidak ditemukan atau sudah kadaluarsa.');
+      // Kita tambahkan info id apa yang sedang dicari agar ketahuan
+      return res.status(404).send(`Link dengan ID "${linkId}" tidak ditemukan di database.`);
     }
 
     const targetUrl = data.url;
     const userAgent = (req.headers['user-agent'] || '').toLowerCase();
     
-    // Deteksi bot medsos (Facebook, WhatsApp, dll)
     const isBot = /facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|linkedinbot|skypeuripreview|discordbot|slackbot|pinterest|googlebot|bingbot/i.test(userAgent);
 
     if (isBot) {
       const title = data.title || 'ROOM Link Shortener';
       const image = data.image || 'https://i.imgur.com/8k3Ddag.jpeg';
       
-      // Kirim HTML Open Graph agar Title kustom Anda terbaca Facebook
       return res.setHeader('Content-Type', 'text/html').status(200).send(`
         <!DOCTYPE html>
         <html>
@@ -52,7 +55,6 @@ export default async function handler(req, res) {
       `);
     }
 
-    // Jika manusia yang klik, langsung redirect 302 lancar jaya
     return res.redirect(302, targetUrl);
 
   } catch (err) {
