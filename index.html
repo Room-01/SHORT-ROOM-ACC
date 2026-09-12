@@ -8,8 +8,6 @@
   <!-- Favicon (Ikon Tab Browser) -->
   <link rel="icon" type="image/jpeg" href="https://i.imgur.com/8k3Ddag.jpeg">
 
-  <!-- Library Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -408,37 +406,23 @@
   </div>
 
   <script>
-    const ADMIN_USER = "ROOMUSER"; 
-    const ADMIN_PASS = "ROOMUSER"; 
-
-    const SUPABASE_URL_VAL = 'https://wpamzjjnrbazrrirojmu.supabase.co'; 
-    const SUPABASE_KEY_VAL = 'sb_publishable_LNIl6ubeO_MOe9JxyLl2TQ_H_MwuqoJ';
-    const sbClient = window.supabase.createClient(SUPABASE_URL_VAL, SUPABASE_KEY_VAL);
-
     window.addEventListener('DOMContentLoaded', async () => {
       const path = window.location.pathname;
       const cleanPath = path.replace('/', '').trim();
       const currentHost = window.location.origin;
-
-      // HANYA DOMAIN INI YANG BOLEH MEMBUKA DASHBOARD ADMIN
       const MAIN_DOMAIN = "https://short-room-acc.vercel.app"; 
 
-      // Jika membuka halaman utama (bukan link pendek) DAN diakses dari luar domain utama
+      // Jika membuka halaman utama di luar domain utama
       if ((!cleanPath || cleanPath === 'index.html') && currentHost !== MAIN_DOMAIN) {
         document.body.innerHTML = "<div style='color:#ef4444; text-align:center; margin-top:20vh; font-family:sans-serif;'>Akses ditolak. Domain ini khusus untuk link pendek.</div>";
         return;
       }
 
-      // Jika sedang membuka link pendek (ada slug di belakang domain)
+      // Jika membuka link pendek (redirect)
       if (cleanPath && cleanPath !== 'index.html') {
-        document.body.innerHTML = "";
-        
         try {
-          const { data, error } = await sbClient
-            .from('links')
-            .select('url')
-            .eq('id', cleanPath)
-            .single();
+          const res = await fetch(`/api/resolve?id=${cleanPath}`);
+          const data = await res.json();
 
           if (data && data.url) {
             window.location.replace(data.url);
@@ -451,7 +435,6 @@
         return; 
       }
 
-      // Jika membuka halaman utama di domain utama (short-room-acc.vercel.app), tampilkan login/dashboard
       if (localStorage.getItem("isLoggedIn") === "true") {
         document.getElementById('loginCard').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
@@ -467,28 +450,37 @@
       }
     });
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const u = document.getElementById('loginUser').value.trim();
-      const p = document.getElementById('loginPass').value.trim();
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value.trim();
       const remember = document.getElementById('rememberMe').checked;
       const err = document.getElementById('loginError');
 
-      if (u === ADMIN_USER && p === ADMIN_PASS) {
-        localStorage.setItem("isLoggedIn", "true");
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const result = await response.json();
 
-        if (remember) {
-          localStorage.setItem("savedUser", u);
-          localStorage.setItem("savedPass", p);
+        if (result.success) {
+          localStorage.setItem("isLoggedIn", "true");
+          if (remember) {
+            localStorage.setItem("savedUser", username);
+            localStorage.setItem("savedPass", password);
+          } else {
+            localStorage.removeItem("savedUser");
+            localStorage.removeItem("savedPass");
+          }
+          document.getElementById('loginCard').style.display = 'none';
+          document.getElementById('mainApp').style.display = 'flex';
+          document.getElementById('mainWrapper').classList.add('app-active');
         } else {
-          localStorage.removeItem("savedUser");
-          localStorage.removeItem("savedPass");
+          err.style.display = 'block';
         }
-
-        document.getElementById('loginCard').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'flex';
-        document.getElementById('mainWrapper').classList.add('app-active');
-      } else {
+      } catch (ex) {
         err.style.display = 'block';
       }
     });
@@ -576,30 +568,41 @@
         tempResults.push(`${chosenDomain}/${randomId}`);
       }
 
-      const { error } = await sbClient.from('links').insert(rowsToInsert);
+      try {
+        const response = await fetch('/api/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rowsToInsert })
+        });
+        const result = await response.json();
 
-      btn.innerText = "GENERATE ALL LINKS";
-      btn.disabled = false;
+        btn.innerText = "GENERATE ALL LINKS";
+        btn.disabled = false;
 
-      if (error) {
-        alert('Gagal menyimpan link: ' + error.message);
-        return;
+        if (!response.ok) {
+          alert('Gagal menyimpan link: ' + (result.error || 'Terjadi kesalahan'));
+          return;
+        }
+
+        generatedLinksArray = tempResults;
+        outputList.innerHTML = '';
+
+        tempResults.forEach((link) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'result-item';
+          itemDiv.innerHTML = `
+            <span class="result-url">${link}</span>
+            <button class="btn-copy" onclick="copySingle(this, '${link}')">SALIN</button>
+          `;
+          outputList.appendChild(itemDiv);
+        });
+
+        resultCard.classList.add('active');
+      } catch (err) {
+        btn.innerText = "GENERATE ALL LINKS";
+        btn.disabled = false;
+        alert('Terjadi kesalahan jaringan.');
       }
-
-      generatedLinksArray = tempResults;
-      outputList.innerHTML = '';
-
-      tempResults.forEach((link) => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'result-item';
-        itemDiv.innerHTML = `
-          <span class="result-url">${link}</span>
-          <button class="btn-copy" onclick="copySingle(this, '${link}')">SALIN</button>
-        `;
-        outputList.appendChild(itemDiv);
-      });
-
-      resultCard.classList.add('active');
     });
 
     function copySingle(element, text) {
