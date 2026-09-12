@@ -8,9 +8,9 @@ export default async function handler(req, res) {
   try {
     let { id, url, title, image } = req.body;
 
-    // Jika id tidak diisi dari frontend, buat string acak otomatis (6 karakter)
+    // Perbaikan sintaks string acak yang aman
     if (!id || id.trim() === '') {
-      id = Math.random().toString(36.substring(2, 8));
+      id = Math.random().toString(36).substring(2, 8);
     }
 
     const supabase = createClient(
